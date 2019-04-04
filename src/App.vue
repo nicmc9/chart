@@ -1,5 +1,5 @@
 <template>
-  <div id="app">
+  <div id="app" >
 
     <div class="night-mode">
     <p v-if="isNight"   @click="isNight=!isNight">Switch to Day Mode </p>
@@ -32,11 +32,39 @@ export default {
       isNight: false,  // флаг для перехода в ночной режим и обратно
      }
   },
-  created () {
-    fetch('chart_data.json')
-            .then(response => response.json() )
-            .then(data=>  this.charts = data )
-            .catch( alert );
+  mounted () {
+    //Работает в IE 11
+    let self =this;
+    function loadJSON(callback) {
+      var xobj = new XMLHttpRequest();
+      xobj.overrideMimeType("application/json");
+      xobj.open('GET', 'chart_data.json', true); // Replace 'my_data' with the path to your file
+      xobj.onreadystatechange = function () {
+        if (xobj.readyState == 4 && xobj.status == "200") {
+          // Required use of an anonymous callback as .open will NOT return a value but simply returns undefined in asynchronous mode
+          callback(xobj.responseText);
+        }
+      };
+      xobj.send(null);
+    }
+
+    loadJSON(function(response) {
+      // Parse JSON string into object
+      self.charts = JSON.parse(response);
+    });
+
+
+    // if(fetch){
+    //   fetch('chart_data.json')
+    //           .then(response => response.json() )
+    //           .then(data=>  this.charts = data )
+    //           .catch( alert );
+    //
+    //   console.log('есть fetch');
+    // }else{
+    //   console.log('нету fetch');
+    // }
+
   },
   name: 'app',
   components: {
@@ -47,11 +75,13 @@ export default {
 
 <style scoped>
 
+
  .select-chart{
    list-style: none;
 
   }
  .night-mode{
+
    text-align: center;
    color: #36a8f1 ;
    font: bold italic 2.5rem sans-serif;
