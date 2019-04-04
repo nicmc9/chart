@@ -1,23 +1,18 @@
 <template>
   <div id="app">
-    <h4>Select a chart please: </h4>
-    <label>
-      <select class="select-chart" v-model="currentChart">
-        <option v-for="(chart,index) in charts"   :key="index"  :value="chart" >
-          Chart № {{index+1}}
-        </option>
-      </select>
 
-    </label>
+    <ul class="select-chart">
+      <li v-for="(chart,index) in charts"   :key="index" >
+        <chart-canvas
+                :chart = chart
+        ></chart-canvas>
 
-    <br>
+      </li>
 
-    <template v-if="currentChart">
-      <chart-canvas
-              :chart = currentChart
-      ></chart-canvas>
-    </template>
-  </div>
+    </ul>
+
+</div>
+
 </template>
 
 <script>
@@ -27,21 +22,13 @@ export default {
   data: function () {
     return{
       charts:[],
-      currentChart:0
-    }
-  },
-  methods:{
-    init(data){
-      this.charts = data;
-      this.currentChart = this.charts[0];
-    }
-
+     }
   },
 
   created () {
     fetch('chart_data.json')
             .then(response => response.json() )
-            .then(data=>this.init(data) )
+            .then(data=>  this.charts = data )
             .catch( alert );
 
   },
@@ -52,4 +39,12 @@ export default {
 }
 </script>
 
+<style scoped>
 
+ .select-chart{
+   list-style: none;
+
+  }
+
+
+</style>
