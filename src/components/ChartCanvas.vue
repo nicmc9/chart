@@ -1,6 +1,6 @@
 <template>
 
-    <div  :class="{ night: isNight }">
+    <div>
 
         <div class="stage"  :width = "prevWidth" :height="mainHeight+100">
             <canvas ref="board" :width = "prevWidth" :height="mainHeight+100"
@@ -47,8 +47,7 @@
 
         <a  :href="file" class="save"  download="chart" @click="save">Save chart</a>
 
-        <p v-if="isNight"class="night-mode"  @click="switchDay">Switch to Day Mode </p>
-        <p v-else class="night-mode"   @click="switchDay">Switch to Night Mode </p>
+
 
     </div>
 
@@ -57,7 +56,7 @@
 
 <script>
     export default {
-        props: ['chart'],
+        props: ['chart','isNight'],
         data: function () {
             return {
                 ctxPreview: 0, // Контекст предпросмотра
@@ -90,7 +89,6 @@
                 mainData:[],  // массив значений из columns находящейся между start and end т.е. данные непосредственно сейчас отображаемые
                 currentData:[],  // данные из columns на которых сейчас инфоДоска
                 step:0,  // шаг для координаты х на главном холсте
-                isNight: false,  // флаг для перехода в ночной режим и обратно
                 ratioMain: 1,   // отношение к системе координат холста и значений данных из colimns
                 // набор цветов по умолчанию дневного режима можно переопределить на все графики
                 timeColor: this.$options.dayColor,
@@ -125,6 +123,22 @@
                 this.init();
                 console.log('Я готов');
             },
+            isNight:function () {
+                if(this.isNight){
+                    this.timeColor = this.$options.nightColor;
+                    document.body.style.backgroundColor = "#293647";
+                }else{
+                    document.body.style.backgroundColor = "white";
+                    this.timeColor = this.$options.dayColor;
+                }
+
+                if(this.activGraph.length)  {
+                    this.draw();
+                }else{
+                    this.defaultDraw();
+                }
+
+            }
 
         },
         computed: {
@@ -188,22 +202,7 @@
 
             ///////////////////////Night - Day///////////////////////////////
 
-            switchDay(){
-                this.isNight=!this.isNight;
 
-                if(this.isNight){
-                    this.timeColor = this.$options.nightColor;
-                }else{
-                    this.timeColor = this.$options.dayColor;
-                }
-
-                if(this.activGraph.length)  {
-                    this.draw();
-                }else{
-                    this.defaultDraw();
-                }
-
-            },
             /// методы событий изменяющие данные
 
             isIntoSlider(mouseX){
@@ -1012,12 +1011,7 @@
     }
 
 
-    .night-mode{
-        text-align: center;
-        color: #36a8f1 ;
-        font: bold italic 2.5rem sans-serif;
-        cursor: pointer;
-    }
+
     .save{
         text-align: center;
         color: #36a8f1 ;
@@ -1026,9 +1020,7 @@
         margin-left: 2%;
         text-decoration: none;
     }
-    .night{
-        background-color: #293647;
-    }
+
 
 
     .stage {
