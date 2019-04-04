@@ -1,28 +1,55 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <h4>Select a chart please: </h4>
+    <label>
+      <select class="select-chart" v-model="currentChart">
+        <option v-for="(chart,index) in charts"   :key="index"  :value="chart" >
+          Chart № {{index+1}}
+        </option>
+      </select>
+
+    </label>
+
+    <br>
+
+    <template v-if="currentChart">
+      <chart-canvas
+              :chart = currentChart
+      ></chart-canvas>
+    </template>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import ChartCanvas from './components/ChartCanvas.vue'
 
 export default {
+  data: function () {
+    return{
+      charts:[],
+      currentChart:0
+    }
+  },
+  methods:{
+    init(data){
+      this.charts = data;
+      this.currentChart = this.charts[0];
+    }
+
+  },
+
+  created () {
+    fetch('chart_data.json')
+            .then(response => response.json() )
+            .then(data=>this.init(data) )
+            .catch( alert );
+
+  },
   name: 'app',
   components: {
-    HelloWorld
+    ChartCanvas
   }
 }
 </script>
 
-<style>
-#app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-</style>
+
