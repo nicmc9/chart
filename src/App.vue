@@ -12,6 +12,8 @@
         <chart-canvas
                 :chart = chart
                 :isNight = isNight
+                :hWindow  = hWindow
+                :wWindow  = wWindow
         ></chart-canvas>
 
       </li>
@@ -30,11 +32,27 @@ export default {
     return{
       charts:[],
       isNight: false,  // флаг для перехода в ночной режим и обратно
+      hWindow:null,
+      wWindow:null
      }
   },
+  methods: {
+    onResize() {
+       this.hWindow = document.documentElement.clientHeight;
+       this.wWindow = document.documentElement.clientWidth;
+    }
+  },
+  created(){
+    this.hWindow = document.documentElement.clientHeight;
+    this.wWindow = document.documentElement.clientWidth;
+  },
+
   mounted () {
     //Работает в IE 11
     let self =this;
+
+    window.addEventListener('resize', this.onResize);
+
     function loadJSON(callback) {
       var xobj = new XMLHttpRequest();
       xobj.overrideMimeType("application/json");
@@ -48,23 +66,25 @@ export default {
       xobj.send(null);
     }
 
-    loadJSON(function(response) {
-      // Parse JSON string into object
-      self.charts = JSON.parse(response);
-    });
+      // fetch('chart_data.json')
+      //         .then(response => response.json() )
+      //         .then(data=>  this.charts = data )
+      //         .catch( alert );
 
 
-    // if(fetch){
-    //   fetch('chart_data.json')
-    //           .then(response => response.json() )
-    //           .then(data=>  this.charts = data )
-    //           .catch( alert );
-    //
-    //   console.log('есть fetch');
-    // }else{
-    //   console.log('нету fetch');
-    // }
 
+      loadJSON(function(response) {
+        // Parse JSON string into object
+        self.charts = JSON.parse(response);
+
+      });
+
+
+  },
+
+  beforeDestroy() {
+    // Unregister the event listener before destroying this Vue instance
+    window.removeEventListener('resize', this.onResize);
   },
   name: 'app',
   components: {

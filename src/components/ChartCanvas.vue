@@ -56,7 +56,7 @@
 
 <script>
     export default {
-        props: ['chart','isNight'],
+        props: ['chart','isNight','hWindow','wWindow'],
         data: function () {
             return {
                 ctxPreview: 0, // Контекст предпросмотра
@@ -68,7 +68,7 @@
                 types:{},    //Хранит типы в виде {y0:'line'}
                 columns: {}, //Хранит хначения в виде  { "columns": [   ['x','1099090'],['y0','32'],['y1','342'] ] }
                 //Данные объекта
-                prevWidth: 1080,        // Ширина всех холстов
+              //  prevWidth: 1080,        // Ширина всех холстов
                 prevHeight: 80,         // Высота предпросмотра
                 mainHeight: 600,        // Высота главного холста
                 // Хранение координат предпросмотра для переиспользования
@@ -76,8 +76,8 @@
                 // максимальное значение данных в columns для y координат
                 maxValue: 1,
                 countLine: 5,  // соличество линий на главной
-                boxXcoord: this.$options.init.boxXcoord,  // начальная координата х коробки
-                boxWidth: this.$options.init.boxWidth,    //начальная ширина коробки
+                boxXcoord: 0,  // начальная координата х коробки
+                boxWidth: 280,    //начальная ширина коробки
                 //превратить в актив
                 activGraph: [],   // массив содержащий неактивные графики в виде ['y0','y1']
                 xOffset: 0,   // смешение от края экрана можно удалить и использовать layerX вместо pageX в будущем
@@ -96,10 +96,7 @@
                 file:''
             }
         },
-        init:{
-            boxXcoord:800,
-            boxWidth:280,
-        },
+
         dayColor:{
             fillPreview:"rgba(245,249,251,0.5)",
             box:"rgba(221,234,243,0.5)",
@@ -119,11 +116,7 @@
         },
 
         watch: {
-            chart:function (){
-                this.init();
-                console.log('Я готов');
-            },
-            isNight:function () {
+             isNight:function () {
                 if(this.isNight){
                     this.timeColor = this.$options.nightColor;
                     document.body.style.backgroundColor = "#293647";
@@ -142,6 +135,14 @@
 
         },
         computed: {
+            prevWidth: function (){
+                let w = this.wWindow*0.8;
+                w = Math.round(w);
+                 return w;
+            },
+            // mainHeight: function (){
+            //     return this.hWindow*0.6;
+            // },
             // геттер вычисляемого значения
             xStep: function () {
                 return  this.prevWidth/(this.columns[0].length - 1);
@@ -167,6 +168,11 @@
             },
 
 
+        },
+        updated(){
+
+            this.init();
+            console.log("Ну обновился я");
         },
 
         methods: {
@@ -888,7 +894,7 @@
                 ctxMain.stroke();
 
             },
-            init(data){
+            init(){
 
                 let canvasPreview = this.$refs.preview;
                 this.ctxPreview = canvasPreview.getContext('2d');
@@ -916,8 +922,8 @@
                 this.ctxMain.translate(0,this.mainHeight+50);   // На графике ниже нулевой линии положительная плоскость Y холста
                 this.ctxBoard.translate(0,this.mainHeight+50);
                 //Ставлю коробку на место возможно временно
-                this.boxXcoord =  800;
-                this.boxWidth = 280;
+                // this.boxXcoord =  800;
+                // this.boxWidth = 280;
 
 
                 this.activGraph = Object.keys(this.colors);
@@ -926,9 +932,6 @@
                 let coords    = this.getCoords(canvasPreview);
                 this.xOffset = coords.left;
                 // console.log('this.xOffset',this.xOffset);
-
-
-
 
                 // Ставим линии пошире и рисуем
                 this.ctxMain.lineWidth=2;
