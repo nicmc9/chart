@@ -1,6 +1,5 @@
 module.exports = {
-  publicPath: process.env.NODE_ENV === 'production'
-    ? '/charts/dist/'
-    : '/',
-
+    publicPath: process.env.NODE_ENV === 'production'
+        ? '/tcharts/'
+        : '/'
 }

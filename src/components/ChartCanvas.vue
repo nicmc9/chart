@@ -2,16 +2,20 @@
 
     <div>
 
-        <div class="stage"  :width = "prevWidth" :height="mainHeight+100">
-            <canvas ref="board" :width = "prevWidth" :height="mainHeight+100"
+        <div class="stage"  :style="{width:prevWidth+'px',height:mainCanvasHeight+'px'}">
+
+            <canvas ref="board" :width = "prevWidth" :height="mainCanvasHeight"
 
                     @mouseenter="mainEnter"
                     @mousemove="mainMove"
                     @mouseleave="mainUp"
+                    @touchstart="mainEnter"
+                    @touchmove="mainMove"
+                    @touchend="mainUp"
 
             ></canvas>
 
-            <canvas ref="main" :width = "prevWidth" :height="mainHeight+100"
+            <canvas ref="main" :width = "prevWidth" :height="mainCanvasHeight"
 
             ></canvas>
 
@@ -20,8 +24,7 @@
         </div>
 
 
-        <br>
-        <canvas ref="preview" :width = "prevWidth" :height="this.prevHeight+10"
+        <canvas ref="preview" :width = "prevWidth" :height="prevCanvasHeight"
                 @mousedown="previewDown"
                 @mousemove="previewMove"
                 @mouseup="previewUp"
@@ -67,17 +70,13 @@
                 names: {},   //Хранит имена в виде {y0:#0}
                 types:{},    //Хранит типы в виде {y0:'line'}
                 columns: {}, //Хранит хначения в виде  { "columns": [   ['x','1099090'],['y0','32'],['y1','342'] ] }
-                //Данные объекта
-              //  prevWidth: 1080,        // Ширина всех холстов
-                prevHeight: 80,         // Высота предпросмотра
-                mainHeight: 600,        // Высота главного холста
-                // Хранение координат предпросмотра для переиспользования
+              // Хранение координат предпросмотра для переиспользования
                 previewCoord: [],    //   [ [122, 'y0'] ,[123,'y1']]
                 // максимальное значение данных в columns для y координат
                 maxValue: 1,
                 countLine: 5,  // соличество линий на главной
                 boxXcoord: 0,  // начальная координата х коробки
-                boxWidth: 280,    //начальная ширина коробки
+                boxWidth: 200,    //начальная ширина коробки
                 //превратить в актив
                 activGraph: [],   // массив содержащий неактивные графики в виде ['y0','y1']
                 xOffset: 0,   // смешение от края экрана можно удалить и использовать layerX вместо pageX в будущем
@@ -136,13 +135,34 @@
         },
         computed: {
             prevWidth: function (){
-                let w = this.wWindow*0.8;
-                w = Math.round(w);
-                 return w;
+            let w= Math.round(this.wWindow*0.8);
+               if(w<600) w =600;
+               return w;
             },
-            // mainHeight: function (){
-            //     return this.hWindow*0.6;
-            // },
+            mainHeight: function (){
+             let h =   Math.round(this.hWindow*0.6);
+             if(h<400) h=400;
+             return h;
+            },
+            prevHeight: function (){
+              return  Math.round(this.mainHeight*0.15);
+            },
+            prevShift:function(){
+              return   this.prevHeight/10;
+            },
+            mainShift:function(){
+                return   this.mainHeight/10;
+            },
+            mainCanvasHeight: function (){
+                 return this.mainHeight + this.mainShift;
+            },
+            prevCanvasHeight: function (){
+                return this.prevHeight + this.prevShift;
+            },
+
+            boxStop:function (){
+                 return this.prevWidth*0.2;
+            },
             // геттер вычисляемого значения
             xStep: function () {
                 return  this.prevWidth/(this.columns[0].length - 1);
@@ -171,7 +191,7 @@
         },
         updated(){
 
-            this.init();
+          this.init();
             console.log("Ну обновился я");
         },
 
@@ -274,6 +294,8 @@
             previewMove(e){
 
                 if(!this.activGraph.length) return;
+
+              //   let initBox = this.prevWidth*0.3;
                 if(this.selectedLeftSide){
                     //Нужно изменить параметры которые влияют на рисование коробки
                     // коробка будет отрисовываться сама благодорая интервалам
@@ -295,7 +317,7 @@
                     // если мы шли в право и уменьшили ширину до 300
                     // тогда останавливаем продвижение и все
                     // при этом не трогаем ширину если ее поменять будет немного дергаться
-                    if( newWidth <= this.$options.init.boxWidth){
+                    if( newWidth <= this.boxStop){
                         this.boxXcoord = saveboxXcoord;
 
                     }else{
@@ -322,7 +344,7 @@
 
                     // проверка границ сначала на размер коробки затем
                     // на выход из холста если все нормально изменяем ширину на новую
-                    if(newWidth <= this.$options.init.boxWidth){
+                    if(newWidth <= this.boxStop){
                         return;
                     }
                     else if( this.boxXcoord + newWidth >= this.prevWidth){
@@ -409,7 +431,7 @@
 
             drawInfoBoard(){
 
-                console.log('я рисую доску');
+            //    console.log('я рисую доску');
                 let ctx = this.ctxBoard;
                 let self = this;
                 ctx.clearRect(0, -this.mainHeight-50, this.prevWidth, this.mainHeight+100);
@@ -641,7 +663,7 @@
             },
 
             drawGraph(yCoord ,ctx,color,step){
-                console.log('я рисую график');
+              //  console.log('я рисую график');
                 let x = 0;
                 ctx.strokeStyle = color;
                 ctx.beginPath();
@@ -655,40 +677,44 @@
             },
 
             drawBox(ctx){
-                console.log('я рисую коробку');
+           //     console.log('я рисую коробку');
 
                 ctx.strokeStyle=this.timeColor.box;
                 //Координата правой часта коробки
                 let rightSideBox = this.boxXcoord + this.boxWidth;
 
                 // Затем главный бокс
+                let d = this.prevShift/2; // Раньше было 5
+
 
                 let widthLine = 15;
                 let r =widthLine/2;  //r нам нужен чтобы рамка рисовалась внутри холста без него она выходит за холст на половину
                 ctx.lineWidth =widthLine;
 
                 ctx.beginPath();
-                ctx.moveTo(this.boxXcoord+r,-this.prevHeight-5);
-                ctx.lineTo(this.boxXcoord+r,5);
-                ctx.moveTo(rightSideBox-r,-this.prevHeight-5);
-                ctx.lineTo(rightSideBox-r,5);
+                ctx.moveTo(this.boxXcoord+r,-this.prevHeight-d);
+                ctx.lineTo(this.boxXcoord+r,d);
+                ctx.moveTo(rightSideBox-r,-this.prevHeight-d);
+                ctx.lineTo(rightSideBox-r,d);
                 ctx.stroke();
 
                 ctx.lineWidth =4;
                 ctx.beginPath();
-                ctx.moveTo(this.boxXcoord,-this.prevHeight-5);
-                ctx.lineTo(rightSideBox,-this.prevHeight-5);
-                ctx.moveTo(rightSideBox,5);
-                ctx.lineTo(this.boxXcoord,5);
+                ctx.moveTo(this.boxXcoord,-this.prevHeight-d);
+                ctx.lineTo(rightSideBox,-this.prevHeight-d);
+                ctx.moveTo(rightSideBox,d);
+                ctx.lineTo(this.boxXcoord,d);
                 ctx.stroke();
 
             },
             drawFillBox(ctx){
 
+                let d = this.prevShift/2;
+
                 ctx.fillStyle = this.timeColor.fillPreview;
                 let rightSideBox = this.boxXcoord + this.boxWidth;
-                ctx.fillRect(0,-this.prevHeight-5,this.boxXcoord, this.prevHeight+10);
-                ctx.fillRect(rightSideBox,-this.prevHeight-5,this.prevWidth-rightSideBox, this.prevHeight+10);
+                ctx.fillRect(0,-this.prevHeight-d,this.boxXcoord, this.prevCanvasHeight);
+                ctx.fillRect(rightSideBox,-this.prevHeight-d,this.prevWidth-rightSideBox, this.prevCanvasHeight);
             },
 
             drawMetrics(ctx){
@@ -779,7 +805,7 @@
             },
 
             drawYmeter(ctx){
-                console.log('я рисую Y метрики');
+              //  console.log('я рисую Y метрики');
                 ctx.fillText('0', 5, -5);
                 ctx.beginPath();
                 for(let i =0 ; i < this.countLine+1 ; i++){
@@ -811,7 +837,7 @@
             },
             drawPreviewGraphs(ctxPreview){
 
-                console.log('я рисую превью графики');
+             //   console.log('я рисую превью графики');
                 for(let i = 0; i < this.previewCoord.length;i++ ) {
                     let tempArray =  this.previewCoord[i];
                     let color =   this.colors[this.activGraph[i]];
@@ -821,7 +847,7 @@
             },
 
             drawMainGraphs(ctxMain){
-                console.log('я рисую главный график');
+           //     console.log('я рисую главный график');
 
                 let yCoord = [];
                 for(let i = 1; i < this.mainData.length;i++ ) {
@@ -841,8 +867,8 @@
 
                 //очищаем холст
 
-                ctxPreview.clearRect(0, -this.prevHeight-5, this.prevWidth, this.prevHeight+10);
-                ctxMain.clearRect(0, -this.mainHeight-50, this.prevWidth, this.mainHeight+100);
+                ctxPreview.clearRect(0, -this.prevHeight-(this.prevShift/2), this.prevWidth, this.prevCanvasHeight);
+                ctxMain.clearRect(0, -this.mainHeight-(this.mainShift/2), this.prevWidth, this.mainCanvasHeight);
 
                 // Сначала заполнаем массив данных от start До end
                 this.setCurrentMainData();
@@ -871,14 +897,14 @@
                 let ctxPreview = this.ctxPreview;
 
                 //очищаем холст
-                ctxPreview.clearRect(0, -this.prevHeight-5, this.prevWidth, this.prevHeight+10);
-                ctxMain.clearRect(0, -this.mainHeight-50, this.prevWidth, this.mainHeight+100);
+                ctxPreview.clearRect(0, -this.prevHeight-(this.prevShift/2), this.prevWidth, this.prevCanvasHeight);
+                ctxMain.clearRect(0, -this.mainHeight-(this.mainShift/2), this.prevWidth, this.mainCanvasHeight);
 
                 ctxPreview.fillStyle = this.timeColor.gLine;
                 ctxMain.fillStyle = this.timeColor.gLine;
 
-                ctxPreview.fillRect(0, -this.prevHeight-5, this.prevWidth, this.prevHeight+10);
-                ctxMain.fillRect(0, -this.mainHeight-50, this.prevWidth, this.mainHeight+100);
+                ctxPreview.fillRect(0, -this.prevHeight-(this.prevShift/2), this.prevWidth, this.prevCanvasHeight);
+                ctxMain.fillRect(0, -this.mainHeight-(this.mainShift/2), this.prevWidth, this.mainCanvasHeight);
 
 
                 ctxMain.strokeStyle ='#000';
@@ -900,9 +926,9 @@
                 this.ctxPreview = canvasPreview.getContext('2d');
                 let canvasMain = this.$refs.main;
                 this.ctxMain = canvasMain.getContext('2d');
-
                 let canvasBoard = this.$refs.board;
                 this.ctxBoard = canvasBoard.getContext('2d');
+
 
                 this.colors = this.chart.colors;
                 this.names = this.chart.names;
@@ -917,28 +943,41 @@
                 this.ctxPreview.save();
                 this.ctxMain.save();
                 this.ctxBoard.save();
+
+                let chiftM = this.mainHeight+(this.mainShift/2);
+                let chiftP = this.prevHeight+(this.prevShift/2);
+
+                console.log('this.mainHeight',this.mainHeight);
+                console.log('this.prevHeight',this.prevHeight);
+                console.log('this.mainCanvasHeight',this.mainCanvasHeight);
+                console.log('this.prevCanvasHeight',this.prevCanvasHeight);
+                console.log('chiftM',chiftM);
+                console.log('chiftP',chiftP);
+
                 //переводим сисмему координат на низ холста
-                this.ctxPreview.translate(0,this.prevHeight+5); //сдвиг по высоте
-                this.ctxMain.translate(0,this.mainHeight+50);   // На графике ниже нулевой линии положительная плоскость Y холста
-                this.ctxBoard.translate(0,this.mainHeight+50);
+                this.ctxPreview.translate(0,chiftP); //сдвиг по высоте
+                this.ctxMain.translate(0,chiftM);   // На графике ниже нулевой линии положительная плоскость Y холста
+                this.ctxBoard.translate(0,chiftM);
                 //Ставлю коробку на место возможно временно
                 // this.boxXcoord =  800;
                 // this.boxWidth = 280;
 
 
                 this.activGraph = Object.keys(this.colors);
-                console.log(' this.activGraph', this.activGraph);
+             //   console.log(' this.activGraph', this.activGraph);
                 // инициализируем смещение от левого края холста
                 let coords    = this.getCoords(canvasPreview);
                 this.xOffset = coords.left;
                 // console.log('this.xOffset',this.xOffset);
 
                 // Ставим линии пошире и рисуем
-                this.ctxMain.lineWidth=2;
-                this.ctxPreview.lineWidth=2;
+                this.ctxMain.lineWidth = 2;
+                this.ctxPreview.lineWidth = 2;
                 // Заполняем массив превью коорд
                 // что бы потом его не персчитывать при перерисовке
                 // а только при смене графиков
+                this.boxXcoord=0;
+                this.boxWidth=this.prevWidth*0.3;
 
                 this.setDateArray();
                 this.setPreviewCoord();
@@ -1027,8 +1066,8 @@
 
 
     .stage {
-        width: 1080px;
-        height: 700px;
+        /*width: 1080px;*/
+        /*height: 700px;*/
         position: relative;
 
     }
