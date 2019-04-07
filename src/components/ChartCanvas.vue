@@ -18,16 +18,14 @@
 
             ></canvas>
 
-            <canvas ref="main" :width = "prevWidth" :height="mainCanvasHeight"
+            <canvas  ref="main" :width = "prevWidth" :height="mainCanvasHeight"
 
             ></canvas>
 
-
-
         </div>
 
-
-        <canvas ref="preview" :width = "prevWidth" :height="prevCanvasHeight"
+    <div class="stage2" :style="{width:prevWidth+'px',height:prevCanvasHeight+'px'}">
+        <canvas    ref="preview" :width = "prevWidth" :height="prevCanvasHeight"
                 @mousedown="previewDown('mouse',$event)"
                 @mousemove="previewMove('mouse',$event)"
                 @mouseup="previewUp"
@@ -37,6 +35,7 @@
                 @touchmove="previewMove('touch',$event)"
                 @touchend="previewUp"
         ></canvas>
+    </div>
         <br>
 
 
@@ -144,15 +143,18 @@
         },
         computed: {
             prevWidth: function (){
-            // let w= Math.round(this.wWindow*0.8);
-            //    if(w<600) w =600;
-            //    return w;
-                return this.wWindow;
+            let w= Math.round(this.wWindow*0.9);
+               // if(w<600) w =600;
+               return w;
+            //    return this.wWindow;
             },
             mainHeight: function (){
-             let h =   Math.round(this.hWindow/2);
-             // if(h<400) h=400;
-             return h;
+                if(this.hWindow > this.wWindow){
+                    return  Math.round(this.hWindow*0.4);
+                 }else {
+                    return  Math.round(this.hWindow*0.8);
+                }
+
             },
             prevHeight: function (){
               return  Math.round(this.mainHeight*0.12);
@@ -419,7 +421,7 @@
                     this.boardData(mouse);
                 }else{
 
-                  //  event.preventDefault();
+                  event.preventDefault();
                     let touches = event.changedTouches;
                     let mouse = touches[0].pageX-this.xOffset;
                      this.boardData(mouse);
@@ -475,7 +477,12 @@
                 //Для доски и кружочков
                 ctx.fillStyle =this.timeColor.board;
                 // Используеться для вычислений и для установки размеров текущих данных///
-                ctx.font="bold 25px sans-serif";
+
+                 //Размеры шрифта
+
+
+
+
                 ctx.save();
                 ctx.strokeStyle=this.timeColor.box;                     ///
                 drawVerticalLine();
@@ -485,6 +492,11 @@
 
                 let widthBoard = this.prevWidth/7;          // Начальная ширина доски 135
                 let hei = this.mainHeight/6;                 //Высота доски  100
+
+
+                 let  textSizeData = Math.round(hei*0.25);
+                 let  textSizeDate  =Math.round(hei*0.2);
+                 let  textSizeNames  = Math.round(hei*0.2);
                 const space = 20;
 
                 // значение отступа сверху подобрал эксперементально где-то 25 -30 нормально
@@ -496,6 +508,7 @@
                 let textWidthArr=[];
                 // первое значение дату пропускаем
                 //Сначала измеряем текст
+                 ctx.font="bold "+textSizeData+"px  sans-serif";
                 measureText();
                 // потом обновляем ширину
                 updateWidthBoard();
@@ -513,14 +526,14 @@
 
                 ctx.lineWidth =2;
 
-
+                 ctx.font="bold "+textSizeData+"px  sans-serif";
                 drawCurrentData();
 
                 ctx.fillStyle =self.timeColor.textInfo;
-                ctx.font="20px sans-serif";
+                 ctx.font=textSizeDate+"px  sans-serif";
                 drawDates();
 
-                ctx.font=" 16px sans-serif";
+                 ctx.font=textSizeNames+"px  sans-serif";
                 drawNames();
 
                 function drawBoard(x, y, width, height, radius) {
@@ -759,7 +772,10 @@
 
                 ctx.fillStyle = this.timeColor.metrics;
                 ctx.strokeStyle = this.timeColor.gLine;
-                ctx.font = "16px sans-serif";
+                let fontSize = Math.round(this.mainHeight*0.03);
+                if(fontSize>20 ) fontSize =20;
+                if(fontSize<10 ) fontSize =10;
+                ctx.font = fontSize+"px sans-serif";
 
                 this.drawDate(ctx);
                 this.drawYmeter(ctx);
@@ -789,7 +805,7 @@
 
 
             drawDate(ctx){
-
+                let self =this;
                 let date = this.datesArr.slice(this.start,this.end);
                 let step = this.step;
 
@@ -827,11 +843,17 @@
 
                     ctx.beginPath();
                     let  x =0;
+
                     for(let i = 0;i < date.length; i++)
                     {
                         if(date[i]){
                             if(actualDate.indexOf(date[i])!==-1) {
-                                ctx.fillText(date[i], x-20, 20);
+
+                                let xl = x-20;
+                                if(xl<0) xl=0;
+                                if(xl>self.prevWidth-50) xl = self.prevWidth-50;
+                                console.log('xl',xl);
+                                ctx.fillText(date[i],xl, 20);
                             }
                         }
                         x+=step;
@@ -1013,7 +1035,7 @@
                 // что бы потом его не персчитывать при перерисовке
                 // а только при смене графиков
                 this.boxXcoord=0;
-                this.boxWidth=this.prevWidth*0.2;
+                this.boxWidth=this.prevWidth*0.3;
 
                 this.setDateArray();
                 this.setPreviewCoord();
@@ -1039,7 +1061,7 @@
 <style scoped>
     .checkbox{
         list-style: none;
-        padding: 5px;
+        margin: auto;
     }
     .checkbox__li{
         display: inline-block;
@@ -1089,8 +1111,6 @@
         font-size: 0;
     }
 
-
-
     .save{
         text-align: center;
         color: #36a8f1 ;
@@ -1100,14 +1120,9 @@
         text-decoration: none;
     }
 
-
-
-    .stage {
-        /*width: 1080px;*/
-        /*height: 700px;*/
-
+    .stage, .stage2{
+        margin: auto;
         position: relative;
-
     }
 
     .stage canvas { position: absolute; }
