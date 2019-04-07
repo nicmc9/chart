@@ -6,7 +6,7 @@
     <p v-else    @click="isNight=!isNight">Switch to Night Mode </p>
     </div>
 
-    <P >hWindow {{hWindow}}   --- wWindow {{wWindow}} </P>
+
     <ul class="select-chart">
       <li v-for="(chart,index) in charts"   :key="index" >
         <p  class="number">Chart№{{index+1}}</p>
@@ -110,7 +110,7 @@ export default {
 
    text-align: center;
    color: #36a8f1 ;
-   font: bold italic 2.5rem sans-serif;
+   font: bold italic 2rem sans-serif;
    cursor: pointer;
  }
 

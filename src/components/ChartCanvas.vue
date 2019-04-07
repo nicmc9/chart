@@ -1,20 +1,22 @@
 <template>
 
     <div>
-
+        <p>touchBoard --- {{touchBoard}}  this.timeId ---{{this.timeId}} </p>
 
         <div class="stage"  :style="{width:prevWidth+'px',height:mainCanvasHeight+'px'}">
 
             <canvas ref="board" :width = "prevWidth" :height="mainCanvasHeight"
-                      @mouseenter="mainEnter"
-                      @mousemove="mainMove('mouse',$event)"
-                      @mouseleave="mainUp"
 
-                      @touchstart="mainEnter"
-                      @touchmove="mainMove('touch',$event)"
-                      @touchend="mainUp"
-                      @touchcancel="mainUp"
+                   @touchstart="mainEnter"
+                   @touchmove="mainMove('touch',$event)"
+                   @touchend="mainUp"
+                   @touchcancel="mainUp"
 
+
+                    @mouseenter="mainEnter"
+                    @mousemove="mainMove('mouse',$event)"
+                    @mouseleave="mainUp"
+                    @mouseup="mainUp"
 
             ></canvas>
 
@@ -28,8 +30,8 @@
         <canvas    ref="preview" :width = "prevWidth" :height="prevCanvasHeight"
                 @mousedown="previewDown('mouse',$event)"
                 @mousemove="previewMove('mouse',$event)"
-                @mouseup="previewUp"
                 @mouseleave="previewUp"
+                @mouseup="previewUp"
 
                 @touchstart="previewDown('touch',$event)"
                 @touchmove="previewMove('touch',$event)"
@@ -37,7 +39,7 @@
         ></canvas>
     </div>
         <br>
-
+        <p>touchBoard --- {{touchBoard}}  this.timeId ---{{this.timeId}} </p>
 
         <ul class="checkbox">
             <li class="checkbox__li" v-for ="(val,key) in names">
@@ -65,7 +67,6 @@
 
 <script>
 
-
     export default {
         props: ['chart','isNight','hWindow','wWindow'],
         data: function () {
@@ -91,6 +92,7 @@
                 selectedBox: false, // флаг выбора самой коробки
                 selectedLeftSide: false, // флаг выбора левого столбца коробки
                 selectedRightSide: false, // флаг выбора правого столбца коробки
+                touchBoard: false,
                 timeId: 0,  // таймер для сброса анимации
                 mouseX:0,   // текущее положение мышки
                 mainData:[],  // массив значений из columns находящейся между start and end т.е. данные непосредственно сейчас отображаемые
@@ -138,15 +140,22 @@
                     this.defaultDraw();
                 }
 
+            },
+            wWindow:function () {
+                   let self =this;
+                this.$nextTick(function () {
+                    self.init();
+                });
+
+
+                console.log('watch',this.wWindow);
             }
 
         },
         computed: {
             prevWidth: function (){
-            let w= Math.round(this.wWindow*0.9);
-               // if(w<600) w =600;
-               return w;
-            //    return this.wWindow;
+            return Math.round(this.wWindow*0.9);
+
             },
             mainHeight: function (){
                 if(this.hWindow > this.wWindow){
@@ -201,11 +210,7 @@
 
 
         },
-        updated(){
 
-          this.init();
-            console.log("Ну обновился я");
-        },
 
         methods: {
 
@@ -342,6 +347,9 @@
                     // если в право то увеличиваться
                     //новое значение измениться на небольшую величину
                     this.boxXcoord = mouseX;
+                    if(this.boxXcoord <=0){
+                        this.boxXcoord =0;
+                    }
                     // берем старую шинину
                     let newWidth = this.boxWidth;
                     // разница будет положительно если мыш пошла в лево
@@ -404,24 +412,38 @@
             },
 /////////////////////////  infoBoard /////////////////////////////////////////
             mainEnter(){
+                let self =this;
                 console.log('я вошел');
                 if(!this.activGraph.length) return;
+                this.touchBoard =true;
                 this.timeId = requestAnimationFrame(this.drawInfoBoard);
+                // self.timeId =  setInterval(function() {
+                //     self.drawInfoBoard();
+                // }, 50);
             },
             mainUp(){
+
                 console.log('я вышел');
+                this.touchBoard =false;
+
                 cancelAnimationFrame(this.timeId);
                 this.ctxBoard.clearRect(0, -this.mainHeight-(this.mainShift/2), this.prevWidth, this.mainCanvasHeight);
+
+                //clearInterval(this.timeId);
+
+
             },
 
             mainMove(type,event){
+
+             //   if(!this.touchBoard) return;
 
                 if(type=='mouse'){
                     let mouse = event.pageX-this.xOffset;
                     this.boardData(mouse);
                 }else{
 
-                  event.preventDefault();
+                   // event.preventDefault();
                     let touches = event.changedTouches;
                     let mouse = touches[0].pageX-this.xOffset;
                      this.boardData(mouse);
@@ -469,11 +491,11 @@
             },
              drawInfoBoard(){
 
-            //    console.log('я рисую доску');
+              console.log('я рисую доску');
                 let ctx = this.ctxBoard;
                 let self = this;
-                ctx.clearRect(0, -this.mainHeight-(this.mainShift/2), this.prevWidth, this.mainCanvasHeight);
 
+                 ctx.clearRect(0, -this.mainHeight-(this.mainShift/2), this.prevWidth, this.mainCanvasHeight);
                 //Для доски и кружочков
                 ctx.fillStyle =this.timeColor.board;
                 // Используеться для вычислений и для установки размеров текущих данных///
@@ -627,7 +649,7 @@
                     ctx.stroke();
                 }
 
-                this.timeId = requestAnimationFrame(this.drawInfoBoard);
+               this.timeId = requestAnimationFrame(this.drawInfoBoard);
             },
 
 
@@ -852,7 +874,6 @@
                                 let xl = x-20;
                                 if(xl<0) xl=0;
                                 if(xl>self.prevWidth-50) xl = self.prevWidth-50;
-                                console.log('xl',xl);
                                 ctx.fillText(date[i],xl, 20);
                             }
                         }
@@ -1054,6 +1075,7 @@
         },
 
         name: "ChartCanvas",
+
 
     }
 </script>
