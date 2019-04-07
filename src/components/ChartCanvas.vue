@@ -2,16 +2,19 @@
 
     <div>
 
+
         <div class="stage"  :style="{width:prevWidth+'px',height:mainCanvasHeight+'px'}">
 
             <canvas ref="board" :width = "prevWidth" :height="mainCanvasHeight"
+                      @mouseenter="mainEnter"
+                      @mousemove="mainMove('mouse',$event)"
+                      @mouseleave="mainUp"
 
-                    @mouseenter="mainEnter"
-                    @mousemove="mainMove"
-                    @mouseleave="mainUp"
-                    @touchstart="mainEnter"
-                    @touchmove="mainMove"
-                    @touchend="mainUp"
+                      @touchstart="mainEnter"
+                      @touchmove="mainMove('touch',$event)"
+                      @touchend="mainUp"
+                      @touchcancel="mainUp"
+
 
             ></canvas>
 
@@ -25,10 +28,14 @@
 
 
         <canvas ref="preview" :width = "prevWidth" :height="prevCanvasHeight"
-                @mousedown="previewDown"
-                @mousemove="previewMove"
+                @mousedown="previewDown('mouse',$event)"
+                @mousemove="previewMove('mouse',$event)"
                 @mouseup="previewUp"
                 @mouseleave="previewUp"
+
+                @touchstart="previewDown('touch',$event)"
+                @touchmove="previewMove('touch',$event)"
+                @touchend="previewUp"
         ></canvas>
         <br>
 
@@ -58,6 +65,8 @@
 </template>
 
 <script>
+
+
     export default {
         props: ['chart','isNight','hWindow','wWindow'],
         data: function () {
@@ -76,7 +85,7 @@
                 maxValue: 1,
                 countLine: 5,  // соличество линий на главной
                 boxXcoord: 0,  // начальная координата х коробки
-                boxWidth: 200,    //начальная ширина коробки
+                boxWidth: 100,    //начальная ширина коробки
                 //превратить в актив
                 activGraph: [],   // массив содержащий неактивные графики в виде ['y0','y1']
                 xOffset: 0,   // смешение от края экрана можно удалить и использовать layerX вместо pageX в будущем
@@ -135,23 +144,24 @@
         },
         computed: {
             prevWidth: function (){
-            let w= Math.round(this.wWindow*0.8);
-               if(w<600) w =600;
-               return w;
+            // let w= Math.round(this.wWindow*0.8);
+            //    if(w<600) w =600;
+            //    return w;
+                return this.wWindow;
             },
             mainHeight: function (){
-             let h =   Math.round(this.hWindow*0.6);
-             if(h<400) h=400;
+             let h =   Math.round(this.hWindow/2);
+             // if(h<400) h=400;
              return h;
             },
             prevHeight: function (){
-              return  Math.round(this.mainHeight*0.15);
+              return  Math.round(this.mainHeight*0.12);
             },
             prevShift:function(){
               return   this.prevHeight/10;
             },
             mainShift:function(){
-                return   this.mainHeight/10;
+                return   this.mainHeight/5;
             },
             mainCanvasHeight: function (){
                  return this.mainHeight + this.mainShift;
@@ -165,7 +175,7 @@
             },
             // геттер вычисляемого значения
             xStep: function () {
-                return  this.prevWidth/(this.columns[0].length - 1);
+                return  this.prevWidth/(this.columns[0].length-2);
             },
             // Сдвигаем на 1 чтобы в результирующих массивах всегда пропускался первый индекс
             // в котором информация
@@ -175,7 +185,7 @@
             },
 
             end: function () {
-                return this.start + this.boxWidth/this.xStep;
+                return this.start + this.boxWidth/this.xStep+1;
             },
 
             // Высляються цифры в левой шкале
@@ -245,14 +255,25 @@
             },
 
             /////////////////////////  Compute Box Data /////////////////////////////////////////
-            previewDown(e){
+
+            previewDown(type,event){
+                if(type=='mouse'){
+                    let mouse = event.pageX-this.xOffset;
+                    this.downData(mouse);
+                }else{
+
+                    event.preventDefault();
+                    let touches = event.changedTouches;
+                    let mouse = touches[0].pageX-this.xOffset;
+                    this.downData(mouse);
+                }
+            },
+            downData(mouseX){
 
                 if(!this.activGraph.length) return;
 
                 let self = this;
-                let mouseX = e.pageX-this.xOffset;
-
-                //  console.log('this.mouseX',this.mouseX);
+                 //  console.log('this.mouseX',this.mouseX);
                 if(this.isIntoLeftSide(mouseX)){
                     this.selectedLeftSide = true;
                     //  console.log('Попал в левую рамку');
@@ -264,7 +285,7 @@
                 }else if(this.isIntoRightSide(mouseX)){
 
                     this.selectedRightSide = true;
-                    //   console.log('Попал в правую рамку');s
+                    //   console.log('Попал в правую рамку');
 
                     self.timeId =  setInterval(function() {
                         self.draw();
@@ -281,8 +302,6 @@
 
             },
             previewUp(){
-                if(!this.activGraph.length) return;
-
                 this.selectedBox = false;
                 this.selectedLeftSide = false;
                 this.selectedRightSide = false;
@@ -291,7 +310,20 @@
 
             },
 
-            previewMove(e){
+            previewMove(type,event){
+                if(type=='mouse'){
+                    let mouse = event.pageX-this.xOffset;
+                    this.moveData(mouse);
+                }else{
+
+                    event.preventDefault();
+                    let touches = event.changedTouches;
+                    let mouse = touches[0].pageX-this.xOffset;
+                    this.moveData(mouse);
+                }
+            },
+
+            moveData(mouseX){
 
                 if(!this.activGraph.length) return;
 
@@ -299,7 +331,7 @@
                 if(this.selectedLeftSide){
                     //Нужно изменить параметры которые влияют на рисование коробки
                     // коробка будет отрисовываться сама благодорая интервалам
-                    let mouseX = e.pageX-this.xOffset;
+
                     // высталсяем мыш на начало элемента
 
                     // сохраним левую х координату
@@ -328,10 +360,8 @@
                     // console.log('this.boxXcoord',this.boxXcoord );
                     // console.log('this.boxWidth',this.boxWidth );
 
-
-
                 }else if(this.selectedRightSide){
-                    let mouseX = e.pageX-this.xOffset;
+
                     // получаем координату х на границе правой стороны
                     let xRight = this.boxXcoord + this.boxWidth;
 
@@ -353,13 +383,10 @@
                         this.boxWidth = newWidth;
 
                     }
-
                     // console.log('this.boxXcoord',this.boxXcoord );
                     // console.log('this.boxWidth',this.boxWidth );
 
                 }else  if(this.selectedBox){
-                    let mouseX = e.pageX-this.xOffset;
-
                     this.boxXcoord = mouseX - this.boxWidth/ 2;
 
                     //Ограничем левый и правый край
@@ -379,26 +406,32 @@
                 if(!this.activGraph.length) return;
                 this.timeId = requestAnimationFrame(this.drawInfoBoard);
             },
-            mainUp(e){
+            mainUp(){
                 console.log('я вышел');
-                if(!this.activGraph.length) return;
                 cancelAnimationFrame(this.timeId);
-                // Стираем информатор
-                this.ctxBoard.clearRect(0, -this.mainHeight-50, this.prevWidth, this.mainHeight+100);
+                this.ctxBoard.clearRect(0, -this.mainHeight-(this.mainShift/2), this.prevWidth, this.mainCanvasHeight);
             },
 
-            mainMove(e){
+            mainMove(type,event){
 
+                if(type=='mouse'){
+                    let mouse = event.pageX-this.xOffset;
+                    this.boardData(mouse);
+                }else{
 
-                if(!this.activGraph.length) return;
-
+                  //  event.preventDefault();
+                    let touches = event.changedTouches;
+                    let mouse = touches[0].pageX-this.xOffset;
+                     this.boardData(mouse);
+                }
+            },
+           boardData(mouse){
                 let self = this;
-
-                let mouse = e.pageX-self.xOffset;
+               console.log('mouse',mouse);
 
                 for ( let i =0,j =0; i< self.prevWidth; i+=self.step,j++){
                     let prev = i-self.step;
-                    let center = i-this.step/2;
+                    let center = i-self.step/2;
                     if( mouse < i && mouse >= center ){
                         setCurrentData(j,i);
                         break;
@@ -415,30 +448,33 @@
                         day: 'numeric',
                         weekday: 'short',
                     };
+                    console.log('j',j);
+                    console.log('self.mainData.length',self.mainData[0].length);
 
                     let date = new Date(self.mainData[0][j]).toLocaleString("en-US",options);
+                    if(date === "Invalid Date"){
+                        return;
+                    }
+
                     self.currentData =[];
                     self.currentData.push(date);
                     for(let m = 1; m <self.mainData.length; m++){
                         self.currentData.push( self.mainData[m][j]);
                     }
+                    console.log('self.currentData',self.currentData);
                 }
 
             },
-
-
-
-
-            drawInfoBoard(){
+             drawInfoBoard(){
 
             //    console.log('я рисую доску');
                 let ctx = this.ctxBoard;
                 let self = this;
-                ctx.clearRect(0, -this.mainHeight-50, this.prevWidth, this.mainHeight+100);
+                ctx.clearRect(0, -this.mainHeight-(this.mainShift/2), this.prevWidth, this.mainCanvasHeight);
 
                 //Для доски и кружочков
                 ctx.fillStyle =this.timeColor.board;
-                // Используеться для вычислений и для установки размеров текущихданных///
+                // Используеться для вычислений и для установки размеров текущих данных///
                 ctx.font="bold 25px sans-serif";
                 ctx.save();
                 ctx.strokeStyle=this.timeColor.box;                     ///
@@ -619,7 +655,7 @@
                     tempArray = yArray.slice(this.start,this.end);
                     this.mainData.push(tempArray);
                 }
-                this.step =    this.prevWidth/tempArray.length;
+                this.step =    this.prevWidth/(tempArray.length-1);
 
             },
 
@@ -977,7 +1013,7 @@
                 // что бы потом его не персчитывать при перерисовке
                 // а только при смене графиков
                 this.boxXcoord=0;
-                this.boxWidth=this.prevWidth*0.3;
+                this.boxWidth=this.prevWidth*0.2;
 
                 this.setDateArray();
                 this.setPreviewCoord();
@@ -995,7 +1031,8 @@
             console.log('mounted');
         },
 
-        name: "ChartCanvas"
+        name: "ChartCanvas",
+
     }
 </script>
 
@@ -1068,6 +1105,7 @@
     .stage {
         /*width: 1080px;*/
         /*height: 700px;*/
+
         position: relative;
 
     }

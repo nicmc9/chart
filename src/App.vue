@@ -6,6 +6,7 @@
     <p v-else    @click="isNight=!isNight">Switch to Night Mode </p>
     </div>
 
+    <P >hWindow {{hWindow}}   --- wWindow {{wWindow}} </P>
     <ul class="select-chart">
       <li v-for="(chart,index) in charts"   :key="index" >
         <p  class="number">Chart№{{index+1}}</p>
@@ -40,11 +41,13 @@ export default {
     onResize() {
        this.hWindow = document.documentElement.clientHeight;
        this.wWindow = document.documentElement.clientWidth;
+
     }
   },
   created(){
     this.hWindow = document.documentElement.clientHeight;
     this.wWindow = document.documentElement.clientWidth;
+
   },
 
   mounted () {
@@ -98,7 +101,10 @@ export default {
 
  .select-chart{
    list-style: none;
-
+   padding: 0;
+   /*padding-left: 30px;*/
+   /*padding-right: 30px;*/
+   margin: auto;
   }
  .night-mode{
 
