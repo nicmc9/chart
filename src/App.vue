@@ -12,7 +12,7 @@
         <line-chart
                 :isNight =  isNight
                 :hWindow  = hWindow
-                :wWindow  = wWindow
+                :prevWidth  = prevWidth
         ></line-chart>
 
       </li>
@@ -31,19 +31,23 @@ export default {
     return{
       isNight: false,  // флаг для перехода в ночной режим и обратно
       hWindow:null,
-      wWindow:null
+      prevWidth:null,
      }
+  },
+  computed: {
+
+
   },
   methods: {
     onResize() {
-       this.hWindow = document.documentElement.clientHeight;
-       this.wWindow = document.documentElement.clientWidth;
+      this.hWindow = document.documentElement.clientHeight;
+      this.prevWidth= Math.round(document.documentElement.clientWidth  * 0.9);
 
     }
   },
   created(){
     this.hWindow = document.documentElement.clientHeight;
-    this.wWindow = document.documentElement.clientWidth;
+    this.prevWidth= Math.round(document.documentElement.clientWidth  * 0.9);
 
   },
 

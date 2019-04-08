@@ -69,7 +69,7 @@
 <script>
 
     export default {
-        props: ['isNight','hWindow','wWindow'],
+        props: ['isNight','hWindow','prevWidth'],
         data: function () {
             return {
                 chart:null,
@@ -143,22 +143,22 @@
                 }
 
             },
-            wWindow:function () {
+            prevWidth:function () {
                    let self =this;
                 this.$nextTick(function () {
                     self.init();
                 });
 
 
-                console.log('watch',this.wWindow);
+                console.log('watch',this.prevWidth);
             }
 
         },
         computed: {
-            prevWidth: function (){
-            return Math.round(this.wWindow*0.9);
-
-            },
+            // prevWidth: function (){
+            // return Math.round(this.wWindow*0.9);
+            //
+            // },
             mainHeight: function (){
                 if(this.hWindow > this.wWindow){
                     return  Math.round(this.hWindow*0.4);
