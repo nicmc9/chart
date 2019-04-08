@@ -69,7 +69,7 @@
 <script>
 
     export default {
-        props: ['isNight','hWindow','prevWidth'],
+        props: ['isNight','mainHeight','prevWidth'],
         data: function () {
             return {
                 chart:null,
@@ -159,14 +159,7 @@
             // return Math.round(this.wWindow*0.9);
             //
             // },
-            mainHeight: function (){
-                if(this.hWindow > this.wWindow){
-                    return  Math.round(this.hWindow*0.4);
-                 }else {
-                    return  Math.round(this.hWindow*0.8);
-                }
 
-            },
             prevHeight: function (){
               return  Math.round(this.mainHeight*0.12);
             },

@@ -11,9 +11,9 @@
       <li>
         <line-chart
                 :isNight =  isNight
-                :hWindow  = hWindow
+                :mainHeight  = mainHeight
                 :prevWidth  = prevWidth
-        ></line-chart>
+                ></line-chart>
 
       </li>
 
@@ -32,10 +32,16 @@ export default {
       isNight: false,  // флаг для перехода в ночной режим и обратно
       hWindow:null,
       prevWidth:null,
-     }
+      }
   },
   computed: {
-
+    mainHeight: function (){
+      if(this.hWindow > this.prevWidth){
+        return  Math.round(this.hWindow*0.4);
+      }else {
+        return  Math.round(this.hWindow*0.8);
+      }
+    },
 
   },
   methods: {
