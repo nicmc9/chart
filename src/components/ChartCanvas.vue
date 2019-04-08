@@ -14,6 +14,7 @@
 
 
                     @mouseenter="mainEnter"
+                    @mousedown="mainEnter"
                     @mousemove="mainMove('mouse',$event)"
                     @mouseleave="mainUp"
                     @mouseup="mainUp"
