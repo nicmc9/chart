@@ -69,7 +69,9 @@
 <script>
 
     export default {
-        props: ['isNight','mainHeight','prevWidth','prevHeight','prevShift','mainShift','mainCanvasHeight','prevCanvasHeight','boxStop'],
+        props: ['isNight','mainHeight','prevWidth','prevHeight','prevShift',
+               'mainShift','mainCanvasHeight','prevCanvasHeight','boxStop',
+               'countLine'],
         data: function () {
             return {
                 chart:null,
@@ -85,7 +87,6 @@
                 previewCoord: [],    //   [ [122, 'y0'] ,[123,'y1']]
                 // максимальное значение данных в columns для y координат
                 maxValue: 1,
-                countLine: 5,  // соличество линий на главной
                 boxXcoord: 0,  // начальная координата х коробки
                 boxWidth: 100,    //начальная ширина коробки
                 //превратить в актив
@@ -155,11 +156,6 @@
 
         },
         computed: {
-            // prevWidth: function (){
-            // return Math.round(this.wWindow*0.9);
-            //
-            // },
-
 
             // геттер вычисляемого значения
             xStep: function () {

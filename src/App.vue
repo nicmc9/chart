@@ -19,7 +19,7 @@
                 :mainCanvasHeight  = mainCanvasHeight
                 :prevCanvasHeight = prevCanvasHeight
                 :boxStop = boxStop
-
+                :countLine = countLine
                 ></line-chart>
 
       </li>
@@ -39,6 +39,7 @@ export default {
       isNight: false,  // флаг для перехода в ночной режим и обратно
       hWindow:null,
       prevWidth:null,
+      countLine: 5,  // соличество линий на главной
       }
   },
   computed: {
