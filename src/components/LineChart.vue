@@ -13,11 +13,11 @@
                    @touchcancel="mainUp"
 
 
-                    @mouseenter="mainEnter"
-                    @mousedown="mainEnter"
-                    @mousemove="mainMove('mouse',$event)"
-                    @mouseleave="mainUp"
-                    @mouseup="mainUp"
+                   @mouseenter="mainEnter"
+                   @mousedown="mainEnter"
+                   @mousemove="mainMove('mouse',$event)"
+                   @mouseleave="mainUp"
+                   @mouseup="mainUp"
 
             ></canvas>
 
@@ -54,6 +54,7 @@
 
                 <br>
             </li>
+
         </ul>
         <br>
 
@@ -71,7 +72,7 @@
     export default {
         props: ['isNight','mainHeight','prevWidth','prevHeight','prevShift',
                'mainShift','mainCanvasHeight','prevCanvasHeight','boxStop',
-               'countLine'],
+               'countLine','path'],
         data: function () {
             return {
                 chart:null,
@@ -150,14 +151,15 @@
                     self.init();
                 });
 
-
                 console.log('watch',this.prevWidth);
             }
 
         },
         computed: {
-
             // геттер вычисляемого значения
+            // чтобы уложиться на горизонтальной линии
+            // Уменьшаем на 1 и получаем равные доли
+            // в коломнс первое значение техническое поэтому уменьшаем еще на 1
             xStep: function () {
                 return  this.prevWidth/(this.columns[0].length-2);
             },
@@ -165,13 +167,11 @@
             // в котором информация
             start: function () {
                 return  this.boxXcoord/this.xStep +1;
-
             },
 
             end: function () {
                 return this.start + this.boxWidth/this.xStep+1;
             },
-
             // Высляються цифры в левой шкале
             metricValue: function () {
                 let val = this.maxValue/this.countLine-1;  //this.countLine-1
@@ -180,8 +180,6 @@
             shiftY: function () {
                 return  this.mainHeight/this.countLine;
             },
-
-
         },
 
 
@@ -985,6 +983,9 @@
                 this.colors = this.chart.colors;
                 this.names = this.chart.names;
                 this.types = this.chart.types;
+                if(this.chart.y_scaled){
+                    console.log("y_scaled")
+                }
 
                 //Воостанавливаем чистые настройки контекстов
                 this.ctxPreview.restore();
@@ -1043,11 +1044,13 @@
 
        },
         mounted(){
+
             let self =this;
+            console.log('self.path',self.path);
             function loadJSON(callback) {
                 var xobj = new XMLHttpRequest();
                 xobj.overrideMimeType("application/json");
-                xobj.open('GET', 'contest/1/overview.json', true);
+                xobj.open('GET', self.path+'/overview.json', true);
                 xobj.onreadystatechange = function () {
                     if (xobj.readyState == 4 && xobj.status == "200") {
                         callback(xobj.responseText);

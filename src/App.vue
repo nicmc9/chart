@@ -10,6 +10,7 @@
     <ul class="select-chart">
       <li>
         <line-chart
+                 path = "contest/1"
                 :isNight =  isNight
                 :mainHeight  = mainHeight
                 :prevWidth  = prevWidth
@@ -21,6 +22,23 @@
                 :boxStop = boxStop
                 :countLine = countLine
                 ></line-chart>
+
+      </li>
+
+      <li>
+        <line-chart
+                 path = "contest/2"
+                :isNight =  isNight
+                :mainHeight  = mainHeight
+                :prevWidth  = prevWidth
+                :prevHeight  = prevHeight
+                :prevShift  = prevShift
+                :mainShift  = mainShift
+                :mainCanvasHeight  = mainCanvasHeight
+                :prevCanvasHeight = prevCanvasHeight
+                :boxStop = boxStop
+                :countLine = countLine
+        ></line-chart>
 
       </li>
 
@@ -40,6 +58,7 @@ export default {
       hWindow:null,
       prevWidth:null,
       countLine: 5,  // соличество линий на главной
+
       }
   },
   computed: {
@@ -47,7 +66,7 @@ export default {
       if(this.hWindow > this.prevWidth){
         return  Math.round(this.hWindow*0.4);
       }else {
-        return  Math.round(this.hWindow*0.8);
+        return  Math.round(this.hWindow*0.6);
       }
     },
     prevHeight: function (){
