@@ -8,14 +8,12 @@
 
 
     <ul class="select-chart">
-      <li v-for="(chart,index) in charts"   :key="index" >
-        <p  class="number">Chart№{{index+1}}</p>
-        <chart-canvas
-                :chart = chart
-                :isNight = isNight
+      <li>
+        <line-chart
+                :isNight =  isNight
                 :hWindow  = hWindow
                 :wWindow  = wWindow
-        ></chart-canvas>
+        ></line-chart>
 
       </li>
 
@@ -26,12 +24,11 @@
 </template>
 
 <script>
-import ChartCanvas from './components/ChartCanvas.vue'
+import LineChart from './components/LineChart.vue'
 
 export default {
   data: function () {
     return{
-      charts:[],
       isNight: false,  // флаг для перехода в ночной режим и обратно
       hWindow:null,
       wWindow:null
@@ -53,36 +50,7 @@ export default {
   mounted () {
     //Работает в IE 11
     let self =this;
-
     window.addEventListener('resize', this.onResize);
-
-    function loadJSON(callback) {
-      var xobj = new XMLHttpRequest();
-      xobj.overrideMimeType("application/json");
-      xobj.open('GET', 'chart_data.json', true); // Replace 'my_data' with the path to your file
-      xobj.onreadystatechange = function () {
-        if (xobj.readyState == 4 && xobj.status == "200") {
-          // Required use of an anonymous callback as .open will NOT return a value but simply returns undefined in asynchronous mode
-          callback(xobj.responseText);
-        }
-      };
-      xobj.send(null);
-    }
-
-      // fetch('chart_data.json')
-      //         .then(response => response.json() )
-      //         .then(data=>  this.charts = data )
-      //         .catch( alert );
-
-
-
-      loadJSON(function(response) {
-        // Parse JSON string into object
-        self.charts = JSON.parse(response);
-
-      });
-
-
   },
 
   beforeDestroy() {
@@ -91,7 +59,7 @@ export default {
   },
   name: 'app',
   components: {
-    ChartCanvas
+    LineChart
   }
 }
 </script>

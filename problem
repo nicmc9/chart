@@ -54,7 +54,7 @@ chart.types – Chart types for each of the columns. Supported values:
 "line",
 "area”,
 "bar”,
-"x" (x axis values for each of the charts at the corresponding positions).
+"x" (значения оси x для каждой из диаграмм в соответствующих позициях).
 
 chart.colors – Color for each variable in 6-hex-digit format (e.g. "#AAAAAA").
 chart.names – Name for each variable.

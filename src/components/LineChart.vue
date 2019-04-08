@@ -69,9 +69,10 @@
 <script>
 
     export default {
-        props: ['chart','isNight','hWindow','wWindow'],
+        props: ['isNight','hWindow','wWindow'],
         data: function () {
             return {
+                chart:null,
                 ctxPreview: 0, // Контекст предпросмотра
                 ctxMain: 0,    //  Главный график
                 ctxBoard: 0,     //Информатор
@@ -1009,11 +1010,10 @@
                 let canvasBoard = this.$refs.board;
                 this.ctxBoard = canvasBoard.getContext('2d');
 
-
+                this.columns =  this.chart.columns;
                 this.colors = this.chart.colors;
                 this.names = this.chart.names;
                 this.types = this.chart.types;
-                this.columns =  this.chart.columns;
 
                 //Воостанавливаем чистые настройки контекстов
                 this.ctxPreview.restore();
@@ -1067,15 +1067,43 @@
 
             }
         },
-        created(){
-            console.log('mounted');
-        },
+       created(){
+
+
+       },
         mounted(){
-            this.init();
+            let self =this;
+            function loadJSON(callback) {
+                var xobj = new XMLHttpRequest();
+                xobj.overrideMimeType("application/json");
+                xobj.open('GET', 'overview.json', true);
+                xobj.onreadystatechange = function () {
+                    if (xobj.readyState == 4 && xobj.status == "200") {
+                        callback(xobj.responseText);
+                    }
+                };
+                xobj.send(null);
+            }
+
+            // fetch('contest/1/overview.json')
+            //         .then(response => response.json() )
+            //         .then(data=>  self.chart = data )
+            //         .catch( alert );
+
+
+
+            loadJSON(function(response) {
+                // Parse JSON string into object
+                self.chart = JSON.parse(response);
+                self.init();
+                console.log('self.chart',self.chart);
+            });
+
+
             console.log('mounted');
         },
 
-        name: "ChartCanvas",
+        name: "LineChart",
 
 
     }
