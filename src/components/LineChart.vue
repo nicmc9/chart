@@ -87,7 +87,7 @@
               // Хранение координат предпросмотра для переиспользования
                 previewCoord: [],    //   [ [122, 'y0'] ,[123,'y1']]
                 // максимальное значение данных в columns для y координат
-                maxValue: 1,
+                maxValue: [],
                 boxXcoord: 0,  // начальная координата х коробки
                 boxWidth: 100,    //начальная ширина коробки
                 //превратить в актив
@@ -102,7 +102,7 @@
                 mainData:[],  // массив значений из columns находящейся между start and end т.е. данные непосредственно сейчас отображаемые
                 currentData:[],  // данные из columns на которых сейчас инфоДоска
                 step:0,  // шаг для координаты х на главном холсте
-                ratioMain: 1,   // отношение к системе координат холста и значений данных из colimns
+                ratioMain: [],   // отношение к системе координат холста и значений данных из colimns
                 // набор цветов по умолчанию дневного режима можно переопределить на все графики
                 timeColor: this.$options.dayColor,
                 datesArr:[],
@@ -173,8 +173,12 @@
                 return this.start + this.boxWidth/this.xStep+1;
             },
             // Высляються цифры в левой шкале
-            metricValue: function () {
-                let val = this.maxValue/this.countLine-1;  //this.countLine-1
+            metric1YValue: function () {
+                let val = this.maxValue[0]/this.countLine-1;  //this.countLine-1
+                return Math.ceil(val);
+            },
+            metric2YValue: function () {
+                let val = this.maxValue[1]/this.countLine-1;  //this.countLine-1
                 return Math.ceil(val);
             },
             shiftY: function () {
@@ -689,16 +693,15 @@
 
             },
             setMainRatio(){
-                let maxArray = [];
+                this.maxValue = [];
 
                 for(let i = 1; i < this.mainData.length;i++ ){
                     let y  = this.mainData[i];
-                    maxArray.push(Math.max.apply(null,y));
+                    this.maxValue.push(Math.max.apply(null,y));
                 }
+                let max  = Math.max.apply(null,this.maxValue);
 
-                this.maxValue = Math.max.apply(null,maxArray);
-
-                this.ratioMain =  this.maxValue/this.mainHeight;
+                this.ratioMain =  max/this.mainHeight;
                 this.ratioMain =   Math.round(this.ratioMain * 100) / 100;
 
                 //    console.log("ratioMain",this.ratioMain);
@@ -855,13 +858,28 @@
             },
 
             drawYmeter(ctx){
-              //  console.log('я рисую Y метрики');
-                ctx.fillText('0', 5, -5);
+
+                if(this.chart.y_scaled) {
+
+                    ctx.fillStyle = this.colors.y1;
+                    ctx.beginPath();
+                    for(let i =0 ; i < this.countLine+1 ; i++){
+
+                        let size = this.metric2YValue*i;
+                       // console.log('size ',size );
+                        let text = ctx.measureText(size); // TextMetrics object
+                      //  console.log('text.width',text.width );
+                        let x = this.prevWidth -text.width;
+                        ctx.fillText(this.metric2YValue*i, x, -this.shiftY*i-5);
+                    }
+                    ctx.fillStyle = this.colors.y0;
+                }
+
                 ctx.beginPath();
                 for(let i =0 ; i < this.countLine+1 ; i++){
                     ctx.moveTo(0,-this.shiftY*i);
                     ctx.lineTo(this.prevWidth ,-this.shiftY*i);
-                    ctx.fillText(this.metricValue*i, 5, -this.shiftY*i-5);
+                    ctx.fillText(this.metric1YValue*i, 5, -this.shiftY*i-5);
                 }
                 ctx.stroke();
 
@@ -1047,10 +1065,11 @@
 
             let self =this;
             console.log('self.path',self.path);
+            let path = self.path+'/overview.json';
             function loadJSON(callback) {
                 var xobj = new XMLHttpRequest();
                 xobj.overrideMimeType("application/json");
-                xobj.open('GET', self.path+'/overview.json', true);
+                xobj.open('GET', path, true);
                 xobj.onreadystatechange = function () {
                     if (xobj.readyState == 4 && xobj.status == "200") {
                         callback(xobj.responseText);
