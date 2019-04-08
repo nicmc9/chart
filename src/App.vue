@@ -13,6 +13,13 @@
                 :isNight =  isNight
                 :mainHeight  = mainHeight
                 :prevWidth  = prevWidth
+                :prevHeight  = prevHeight
+                :prevShift  = prevShift
+                :mainShift  = mainShift
+                :mainCanvasHeight  = mainCanvasHeight
+                :prevCanvasHeight = prevCanvasHeight
+                :boxStop = boxStop
+
                 ></line-chart>
 
       </li>
@@ -41,6 +48,25 @@ export default {
       }else {
         return  Math.round(this.hWindow*0.8);
       }
+    },
+    prevHeight: function (){
+      return  Math.round(this.mainHeight*0.12);
+    },
+    prevShift:function(){
+      return   this.prevHeight/10;
+    },
+    mainShift:function(){
+      return   this.mainHeight/5;
+    },
+    mainCanvasHeight: function (){
+      return this.mainHeight + this.mainShift;
+    },
+    prevCanvasHeight: function (){
+      return this.prevHeight + this.prevShift;
+    },
+
+    boxStop:function (){
+      return this.prevWidth*0.2;
     },
 
   },

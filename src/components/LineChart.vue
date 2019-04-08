@@ -69,7 +69,7 @@
 <script>
 
     export default {
-        props: ['isNight','mainHeight','prevWidth'],
+        props: ['isNight','mainHeight','prevWidth','prevHeight','prevShift','mainShift','mainCanvasHeight','prevCanvasHeight','boxStop'],
         data: function () {
             return {
                 chart:null,
@@ -160,25 +160,7 @@
             //
             // },
 
-            prevHeight: function (){
-              return  Math.round(this.mainHeight*0.12);
-            },
-            prevShift:function(){
-              return   this.prevHeight/10;
-            },
-            mainShift:function(){
-                return   this.mainHeight/5;
-            },
-            mainCanvasHeight: function (){
-                 return this.mainHeight + this.mainShift;
-            },
-            prevCanvasHeight: function (){
-                return this.prevHeight + this.prevShift;
-            },
 
-            boxStop:function (){
-                 return this.prevWidth*0.2;
-            },
             // геттер вычисляемого значения
             xStep: function () {
                 return  this.prevWidth/(this.columns[0].length-2);
