@@ -72,7 +72,7 @@
     export default {
         props: ['isNight','mainHeight','prevWidth','prevHeight','prevShift',
                'mainShift','mainCanvasHeight','prevCanvasHeight','boxStop',
-               'countLine','path'],
+               'countLine','path','nameChart'],
         data: function () {
             return {
                 chart:null,
@@ -166,11 +166,11 @@
             // Сдвигаем на 1 чтобы в результирующих массивах всегда пропускался первый индекс
             // в котором информация
             start: function () {
-                return  this.boxXcoord/this.xStep +1;
+                return Math.ceil( this.boxXcoord/this.xStep +1);
             },
 
             end: function () {
-                return this.start + this.boxWidth/this.xStep+1;
+                return Math.ceil( this.start + this.boxWidth/this.xStep);
             },
             // Высляються цифры в левой шкале
             metric1YValue: function () {
@@ -555,7 +555,7 @@
 
                         ctx.strokeStyle = self.colors[self.activGraph[i-1]];
 
-                        let y = -self.currentData[i]/self.ratioMain;
+                        let y = -self.currentData[i]/self.ratioMain[i-1];
 
                         ctx.beginPath();
                         ctx.arc(self.mouseX,y,5,0,Math.PI*2,true);
@@ -670,7 +670,9 @@
             },
 
             getPreviewRatio(){
-                let maxArray = [];
+
+                let ratioPreview = [];
+                let max = 0;
                 //Пропускаем первый элемент массива содержащий даты
                 for(let i = 1; i < this.columns.length;i++ ){
                     let y  = this.columns[i];
@@ -679,14 +681,12 @@
                     }
                     let temp = y[0];
                     y[0]=0;  //MAth.max работает только с цифрами
-                    maxArray.push(Math.max.apply(null,y));
+                    max = Math.max.apply(null,y);
                     y[0]=temp;
+
+                    let rait = max/this.prevHeight;
+                    ratioPreview.push(Math.round(rait * 100) / 100);
                 }
-                let maxValue = Math.max.apply(null,maxArray);
-
-                let ratioPreview = maxValue/this.prevHeight;
-                ratioPreview =   Math.round(ratioPreview * 100) / 100;  //округляем до 0,00
-
                 return ratioPreview;
                 // console.log("maxValue",maxValue);
                 // console.log("ratioPreview",this.ratioPreview);
@@ -694,17 +694,17 @@
             },
             setMainRatio(){
                 this.maxValue = [];
-
+                this.ratioMain= [];
+                let max = 0;
                 for(let i = 1; i < this.mainData.length;i++ ){
                     let y  = this.mainData[i];
-                    this.maxValue.push(Math.max.apply(null,y));
+                    max = Math.max.apply(null,y);
+                    this.maxValue.push(max);
+
+                    let rait = max/this.mainHeight;
+                    this.ratioMain.push(Math.round(rait * 100) / 100);
                 }
-                let max  = Math.max.apply(null,this.maxValue);
-
-                this.ratioMain =  max/this.mainHeight;
-                this.ratioMain =   Math.round(this.ratioMain * 100) / 100;
-
-                //    console.log("ratioMain",this.ratioMain);
+             console.log('this.ratioMain',this.ratioMain);
             },
 
             drawGraph(yCoord ,ctx,color,step){
@@ -861,18 +861,16 @@
 
                 if(this.chart.y_scaled) {
 
-                    ctx.fillStyle = this.colors.y1;
-                    ctx.beginPath();
+                    ctx.fillStyle =this.colors['y1'];
+
                     for(let i =0 ; i < this.countLine+1 ; i++){
 
                         let size = this.metric2YValue*i;
-                       // console.log('size ',size );
-                        let text = ctx.measureText(size); // TextMetrics object
-                      //  console.log('text.width',text.width );
+                        let text = ctx.measureText(size);
                         let x = this.prevWidth -text.width;
                         ctx.fillText(this.metric2YValue*i, x, -this.shiftY*i-5);
                     }
-                    ctx.fillStyle = this.colors.y0;
+                    ctx.fillStyle = this.colors['y0'];
                 }
 
                 ctx.beginPath();
@@ -887,6 +885,12 @@
             setPreviewCoord(){
 
                 let ratioPreview  = this.getPreviewRatio(); //Достаточно обновлять только при инициалиции и переключении графиков
+
+                if(!this.chart.y_scaled){
+                    //ЭТо хак надо исправить
+                    ratioPreview[1]=ratioPreview[0];
+
+                }
                 this.previewCoord=[];
                 let yCoord = [];
                 for(let i = 1; i < this.columns.length;i++ ) {
@@ -896,7 +900,7 @@
                         continue;
                     }
                     for(let j = 1 ; j < yArray.length; j++ ) {
-                        yCoord.push(-yArray[j]/ratioPreview);           //Переводим в отрицательную плоскость canvas
+                        yCoord.push(-yArray[j]/ratioPreview[i-1]);           //Переводим в отрицательную плоскость canvas
                     }
 
                     this.previewCoord.push(yCoord);
@@ -917,16 +921,47 @@
             drawMainGraphs(ctxMain){
            //     console.log('я рисую главный график');
 
+                if(!this.chart.y_scaled){
+                 //ЭТо хак надо исправить
+                   let  max = Math.max.apply(null, this.ratioMain);
+                    for(let j = 0 ; j < this.ratioMain.length;j++ ) {
+                        this.ratioMain[j] = max;           //Переводим в отрицательную плоскость canvas
+                    }
+                }
                 let yCoord = [];
                 for(let i = 1; i < this.mainData.length;i++ ) {
                     let yArray  = this.mainData[i];
-                    for(let i = 0 ; i < yArray.length;i++ ) {
-                        yCoord.push(-yArray[i]/this.ratioMain);           //Переводим в отрицательную плоскость canvas
+
+                    for(let j = 0 ; j < yArray.length;j++ ) {
+                        yCoord.push(-yArray[j]/this.ratioMain[i-1]);           //Переводим в отрицательную плоскость canvas
                     }
                     let color =   this.colors[this.activGraph[i-1]];
                     this.drawGraph(yCoord,ctxMain,color,this.step);
                     yCoord = [];
                 }
+            },
+            drawMainDateRange(ctx){
+                let dateFirst = this.columns[0][this.start];
+                let dateEnd = this.columns[0][this.end-1];
+
+                console.log('dateEnd',this.end);
+                let  options = {
+                    day: 'numeric',
+                    month: 'long',
+                    year:'numeric',
+                };
+                dateFirst = new Date(dateFirst).toLocaleString("en-GB", options);
+                dateEnd = new Date(dateEnd).toLocaleString("en-GB", options);
+                let range = dateFirst+' - '+ dateEnd;
+                let text = ctx.measureText(range); // TextMetrics object
+                let x = this.prevWidth -text.width-20;
+
+                ctx.fillStyle ="#36a8f1";
+
+                ctx.fillText(range, x, -this.mainHeight-this.mainShift/3);
+                ctx.fillText(this.nameChart, 10, -this.mainHeight-this.mainShift/3);
+                console.log('tthis.timeColor.textInfo',this.timeColor.textInfo);
+
             },
 
             draw(){
@@ -958,6 +993,7 @@
                 // Затенение оставшейся части предпросмотра
                 this.drawFillBox(ctxPreview);
 
+                this.drawMainDateRange(ctxMain);
 
             },
             defaultDraw(){
@@ -1148,7 +1184,7 @@
         left: 0.6rem;
         width: 1.5rem;
         height: 1.5rem;
-        border: 2px solid black;
+        border: 2px solid #000000;
     }
     /*Для ночного режима*/
     .checkbox__input:checked  ~ .checkbox__i{
@@ -1171,4 +1207,8 @@
 
     .stage canvas { position: absolute; }
     .stage :first-child  { z-index: 2; }
+    /*canvas{*/
+    /*    border: 1px solid black;*/
+
+    /*}*/
 </style>

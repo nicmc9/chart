@@ -10,6 +10,7 @@
     <ul class="select-chart">
       <li>
         <line-chart
+                 nameChart ="LineChart"
                  path = "contest/1"
                 :isNight =  isNight
                 :mainHeight  = mainHeight
@@ -27,6 +28,7 @@
 
       <li>
         <line-chart
+                 nameChart ="LineChart 2Y axes"
                  path = "contest/2"
                 :isNight =  isNight
                 :mainHeight  = mainHeight
