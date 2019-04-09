@@ -42,6 +42,24 @@
 <!--                :countLine = countLine-->
 <!--        ></line-chart>-->
       <li>
+        <stacked-bar-chart
+                nameChart ="Bar Chart"
+                path = "contest/3"
+                :isNight =  isNight
+                :mainHeight  = mainHeight
+                :prevWidth  = prevWidth
+                :prevHeight  = prevHeight
+                :prevShift  = prevShift
+                :mainShift  = mainShift
+                :mainCanvasHeight  = mainCanvasHeight
+                :prevCanvasHeight = prevCanvasHeight
+                :boxStop = boxStop
+                :countLine = countLine
+        ></stacked-bar-chart>
+
+      </li>
+
+      <li>
         <bar-chart
                 nameChart ="Bar Chart"
                 path = "contest/4"
@@ -68,6 +86,7 @@
 <script>
 import LineChart from './components/LineChart.vue'
 import BarChart from './components/BarChart.vue'
+import StackedBarChart from './components/StackedBarChart.vue'
 
 export default {
   data: function () {
@@ -134,7 +153,8 @@ export default {
   name: 'app',
   components: {
     LineChart,
-    BarChart
+    BarChart,
+    StackedBarChart
   }
 }
 </script>

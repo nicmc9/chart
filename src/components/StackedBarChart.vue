@@ -1103,7 +1103,7 @@
             console.log('mounted');
         },
 
-        name: "BarChart",
+        name: "StackedBarChart",
 
 
     }
