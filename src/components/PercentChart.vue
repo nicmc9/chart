@@ -61,9 +61,6 @@
         </ul>
         <br>
 
-
-
-
     </div>
 
 
@@ -101,7 +98,7 @@
                 touchBoard: false,
                 timeId: 0,  // таймер для сброса анимации
                 mouseX:0,   // текущее положение мышки
-                mainData:[],  // массив значений из columns находящейся между start and end т.е. данные непосредственно сейчас отображаемые
+                mainCurrentData:[],  // массив значений из columns находящейся между start and end т.е. данные непосредственно сейчас отображаемые
                 currentData:[],  // данные из columns на которых сейчас инфоДоска
                 step:0,  // шаг для координаты х на главном холсте
                 ratioMain: 1,   // отношение к системе координат холста и значений данных из colimns
@@ -109,7 +106,9 @@
                 timeColor: this.$options.dayColor,
                 datesArr:[],
                 file:'',
-                infoboard:false
+                percentData:[],
+                mainCoord:[]
+
             }
         },
 
@@ -450,18 +449,18 @@
                         weekday: 'short',
                     };
               //      console.log('j',j);
-              //      console.log('self.mainData.length',self.mainData[0].length);
+              //      console.log('self.mainCurrentData.length',self.mainCurrentData[0].length);
 
-                    let date = new Date(self.mainData[0][j]).toLocaleString("en-US",options);
+                    let date = new Date(self.mainCurrentData[0][j]).toLocaleString("en-US",options);
                     if(date === "Invalid Date"){
                         return;
                     }
 
                     self.currentData =[];
                     self.currentData.push(date);
-                    for(let m = 1; m <self.mainData.length; m++){
+                    for(let m = 1; m <self.mainCurrentData.length; m++){
 
-                        self.currentData.push( self.mainData[m][j]);
+                        self.currentData.push( self.mainCurrentData[m][j]);
                     }
                    // console.log('self.currentData',self.currentData);
                 }
@@ -638,80 +637,55 @@
             setCurrentMainData(){
 
                 let tempArray =[];
-                this.mainData=[];
-
-                let yArray  = this.columns[0];
-                tempArray = yArray.slice(this.start,this.end);
-                this.mainData.push(tempArray);
-
-                //В цикле только данные по Y
-                for(let i = 1; i < this.columns.length;i++ ) {
-                    yArray  = this.columns[i];
-                    if(this.activGraph.indexOf(yArray[0]) === -1){
-                        continue;
-                    }
+                this.mainCurrentData=[];
+                    //В цикле только данные по Y
+                    let yArray  = this.columns[0];
                     tempArray = yArray.slice(this.start,this.end);
-                    this.mainData.push(tempArray);
+
+                    this.mainCurrentData.push(tempArray);
+
+                for(let i = 0; i < this.mainCoord.length;i++ ) {
+                    yArray  = this.mainCoord[i];
+                    tempArray = yArray.slice(this.start,this.end);
+                    this.mainCurrentData.push(tempArray);
                 }
+                console.log('this.mainCurrentData',this.mainCurrentData);
+
                 this.step =    this.prevWidth/(tempArray.length-1);
 
             },
 
-            getPreviewRatio(){
-
-                let ratioPreview = 1;
-                let maxValue = [];
-                //Пропускаем первый элемент массива содержащий даты
-                for(let i = 1; i < this.columns.length;i++ ){
-                    let y  = this.columns[i];
-                    if(this.activGraph.indexOf(y[0])=== -1){
-                        continue;
-                    }
-                    let temp = y[0];
-                    y[0]=0;  //MAth.max работает только с цифрами
-                    maxValue.push(Math.max.apply(null,y));
-                    y[0]=temp;
-               }
-
-                let max = Math.max.apply(null,maxValue);
-                ratioPreview = max/this.prevHeight;
-                ratioPreview  = Math.round(ratioPreview * 100) / 100;
-
-                return ratioPreview;
-            },
-
-            setMainRatio(){
-                let maxValue = [];
-
-
-                for(let i = 1; i < this.mainData.length;i++ ){
-                    let y  = this.mainData[i];
-                 maxValue.push(Math.max.apply(null,y));
-                }
-
-                this.maxValue = Math.max.apply(null,maxValue);
-                this.ratioMain = this.maxValue/this.mainHeight;
-                this.ratioMain  = Math.round(this.ratioMain * 100) / 100;
-             console.log('this.ratioMain',this.ratioMain);
-            },
-
+            // drawGraph(yCoord ,ctx,color,step){
+            //   //  console.log('я рисую график');
+            //     let x = 0;
+            //     ctx.fillStyle = color;
+            //     ctx.lineWidth = 0;
+            //     ctx.beginPath();
+            //     for(let i=0; i < yCoord.length; i++){
+            //         ctx.moveTo(x,0);
+            //         ctx.lineTo( x,yCoord[i]);
+            //         ctx.lineTo( x+step,yCoord[i]);
+            //         ctx.lineTo( x+step,0);
+            //         x += step;
+            //
+            //     }
+            //     ctx.fill();
+            // },
             drawGraph(yCoord ,ctx,color,step){
-              //  console.log('я рисую график');
+
                 let x = 0;
                 ctx.fillStyle = color;
-                ctx.lineWidth = 0;
                 ctx.beginPath();
+                ctx.moveTo(x,0);
                 for(let i=0; i < yCoord.length; i++){
-                    ctx.moveTo(x,0);
-                    ctx.lineTo( x,yCoord[i]);
-                    ctx.lineTo( x+step,yCoord[i]);
-                    ctx.lineTo( x+step,0);
-                    x += step;
 
+                    ctx.lineTo( x,yCoord[i]);
+                    x += step;
                 }
+                //console.log('x',x);
+                ctx.lineTo( x,0);
                 ctx.fill();
             },
-
             drawBox(ctx){
            //     console.log('я рисую коробку');
 
@@ -866,57 +840,88 @@
                 ctx.stroke();
 
             },
-            setPreviewCoord(){
 
-                let ratioPreview  = this.getPreviewRatio(); //Достаточно обновлять только при инициалиции и переключении графиков
+            getSumData(){
+                let sum = 0;
+                let sumData =[];
+                // Идем по длинне всех данных за основу время взяли
+                let len = this.columns[0].length;
 
-                this.previewCoord=[];
-                let yCoord = [];
-                for(let i = 1; i < this.columns.length;i++ ) {
-                    let yArray  = this.columns[i];
+                for(let i = 1; i < len;i++ ) {
 
-                    if(this.activGraph.indexOf(yArray[0])=== -1){
-                        continue;
+                    for(let j = 1 ; j < this.columns.length; j++ ) {
+                        let yArray  = this.columns[j];
+                        if(this.activGraph.indexOf(yArray[0])=== -1){
+                            continue;
+                        }
+                      sum += yArray[i];
                     }
-                    for(let j = 1 ; j < yArray.length; j++ ) {
-                        yCoord.push(-yArray[j]/ratioPreview);           //Переводим в отрицательную плоскость canvas
-                    }
+                  sumData.push(sum);
+                    sum = 0;
+                }
 
-                    this.previewCoord.push(yCoord);
+                console.log('this.sumData',sumData) ;
+                     return sumData;
+            },
+
+            setPercentData(){
+                let sum  = this.getSumData();
+                 let str = [];
+                 let len = this.columns[0].length;
+                // Идем по длинне всех данных за основу время взяли
+               for(let i = 1 ; i < this.columns.length; i++ ) {
+                        let yArray = this.columns[i];
+
+
+                     str.push(yArray[0]);
+                        for (let j = 1; j < len; j++) {
+                           str.push(Math.round((yArray[j] * 100) / sum[j-1]));
+                            //Пулучаем значение процента в сумме данных конкретного значения
+                            // идет на строкам матрицы
+                         }
+                        this.percentData.push(str);
+                        str =[];
+                    }
+                console.log('this.percentData',this.percentData)
+            },
+
+            setCoord(percentCoord){
+
+               let coord =[];
+               let yCoord = [];
+                for(let i = 0; i < this.percentData.length;i++ ) {
+                    let yArray  = this.percentData[i];
+                    // if(this.activGraph.indexOf(yArray[0]) === -1){
+                    //     continue;
+                    // }
+                 for(let j = 1 ; j < yArray.length; j++ ) {
+                        if(i>=1){
+                          let m =  coord[i-1][j-1];
+
+                            yCoord.push(-yArray[j]*percentCoord +m );
+                        }else{
+                            yCoord.push(-yArray[j]*percentCoord);
+                        }
+
+                    }
+                    coord.push(yCoord);
                     yCoord = [];
                 }
-            },
-            drawPreviewGraphs(ctxPreview){
-             //   console.log('я рисую превью графики');
-                for(let i = 0; i < this.previewCoord.length;i++ ) {
-                    let tempArray =  this.previewCoord[i];
-                    let color =   this.colors[this.activGraph[i]];
-                    this.drawGraph(tempArray,ctxPreview,color,this.xStep);
-                }
+              return coord;
+
             },
 
-            drawMainGraphs(ctxMain){
+            drawGraphs(ctx,data,step){
 
-                let yCoord = [];
-                for(let i = 1; i < this.mainData.length;i++ ) {
-                    let yArray  = this.mainData[i];
-
-                    for(let j = 0 ; j < yArray.length;j++ ) {
-                        yCoord.push(-yArray[j]/this.ratioMain);           //Переводим в отрицательную плоскость canvas
-                    }
+                for(let i = data.length-1; i >0 ;i-- ) {
+                    let tempArray =  data[i];
                     let color =   this.colors[this.activGraph[i-1]];
-                    this.drawGraph(yCoord,ctxMain,color,this.step);
-                    yCoord = [];
+                    this.drawGraph(tempArray,ctx,color,step);
                 }
-
-                if(this.infoboard){
-                    ctxMain.fillStyle = this.timeColor.fillPreview;
-                    ctxMain.fillRect(0,-this.mainHeight,this.prevWidth, this.mainHeight);
-                }
-
-
 
             },
+
+
             drawMainDateRange(ctx){
                 let dateFirst = this.columns[0][this.start];
                 let dateEnd = this.columns[0][this.end-1];
@@ -953,18 +958,14 @@
                 // Сначала заполнаем массив данных от start До end
                 this.setCurrentMainData();
 
-                // Вычисляем шаги и отношения
-                this.setMainRatio();
-                // Метрики главного графика
-
-
-
                 //Коробка предпросмотра
                 this.drawBox(ctxPreview);
                 ctxPreview.lineWidth =2;  // восстановили значение
 
-                this.drawPreviewGraphs(ctxPreview);
-                this.drawMainGraphs(ctxMain);
+
+                this.drawGraphs(ctxPreview,this.previewCoord,this.xStep);
+                this.drawGraphs(ctxMain,this.mainCurrentData,this.step);
+
                 this.drawMetrics(ctxMain);
                 // Все графики
                 // Затенение оставшейся части предпросмотра
@@ -1060,12 +1061,21 @@
                 this.boxXcoord=0;
                 this.boxWidth=this.prevWidth*0.3;
 
+
                 this.setDateArray();
                 // Заполняем массив превью коорд
                 // что бы потом его не персчитывать при перерисовке
                 // а только при смене графиков
-                this.setPreviewCoord();
 
+                this.setPercentData();
+
+                let percent = this.prevHeight*0.01;
+                this.previewCoord = this.setCoord(percent);
+                percent = this.mainHeight*0.01;
+                this.mainCoord = this.setCoord(percent);
+
+                console.log('this.previewCoord',this.previewCoord);
+                console.log('this.mainCoord',this.mainCoord);
 
                 this.draw();
 

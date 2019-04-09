@@ -101,7 +101,7 @@
                 touchBoard: false,
                 timeId: 0,  // таймер для сброса анимации
                 mouseX:0,   // текущее положение мышки
-                mainData:[],  // массив значений из columns находящейся между start and end т.е. данные непосредственно сейчас отображаемые
+                mainCurrentData:[],  // массив значений из columns находящейся между start and end т.е. данные непосредственно сейчас отображаемые
                 currentData:[],  // данные из columns на которых сейчас инфоДоска
                 step:0,  // шаг для координаты х на главном холсте
                 ratioMain: [],   // отношение к системе координат холста и значений данных из colimns
@@ -450,17 +450,17 @@
                         weekday: 'short',
                     };
                     console.log('j',j);
-                    console.log('self.mainData.length',self.mainData[0].length);
+                    console.log('self.mainCurrentData.length',self.mainCurrentData[0].length);
 
-                    let date = new Date(self.mainData[0][j]).toLocaleString("en-US",options);
+                    let date = new Date(self.mainCurrentData[0][j]).toLocaleString("en-US",options);
                     if(date === "Invalid Date"){
                         return;
                     }
 
                     self.currentData =[];
                     self.currentData.push(date);
-                    for(let m = 1; m <self.mainData.length; m++){
-                        self.currentData.push( self.mainData[m][j]);
+                    for(let m = 1; m <self.mainCurrentData.length; m++){
+                        self.currentData.push( self.mainCurrentData[m][j]);
                     }
                     console.log('self.currentData',self.currentData);
                 }
@@ -656,7 +656,7 @@
 
                 let yArray  = this.columns[0];
                 tempArray = yArray.slice(this.start,this.end);
-                this.mainData.push(tempArray);
+                this.mainCurrentData.push(tempArray);
 
                 //В цикле только данные по Y
                 for(let i = 1; i < this.columns.length;i++ ) {
@@ -665,7 +665,7 @@
                         continue;
                     }
                     tempArray = yArray.slice(this.start,this.end);
-                    this.mainData.push(tempArray);
+                    this.mainCurrentData.push(tempArray);
                 }
                 this.step =    this.prevWidth/(tempArray.length-1);
 
@@ -698,8 +698,8 @@
                 this.maxValue = [];
                 this.ratioMain= [];
                 let max = 0;
-                for(let i = 1; i < this.mainData.length;i++ ){
-                    let y  = this.mainData[i];
+                for(let i = 1; i < this.mainCurrentData.length; i++ ){
+                    let y  = this.mainCurrentData[i];
                     max = Math.max.apply(null,y);
                     this.maxValue.push(max);
 
@@ -931,8 +931,8 @@
                     }
                 }
                 let yCoord = [];
-                for(let i = 1; i < this.mainData.length;i++ ) {
-                    let yArray  = this.mainData[i];
+                for(let i = 1; i < this.mainCurrentData.length; i++ ) {
+                    let yArray  = this.mainCurrentData[i];
 
                     for(let j = 0 ; j < yArray.length;j++ ) {
                         yCoord.push(-yArray[j]/this.ratioMain[i-1]);           //Переводим в отрицательную плоскость canvas
