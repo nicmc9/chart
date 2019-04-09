@@ -41,10 +41,45 @@
 <!--                :boxStop = boxStop-->
 <!--                :countLine = countLine-->
 <!--        ></line-chart>-->
+<!--      <li>-->
+<!--        <stacked-bar-chart-->
+<!--                nameChart ="Bar Chart"-->
+<!--                path = "contest/3"-->
+<!--                :isNight =  isNight-->
+<!--                :mainHeight  = mainHeight-->
+<!--                :prevWidth  = prevWidth-->
+<!--                :prevHeight  = prevHeight-->
+<!--                :prevShift  = prevShift-->
+<!--                :mainShift  = mainShift-->
+<!--                :mainCanvasHeight  = mainCanvasHeight-->
+<!--                :prevCanvasHeight = prevCanvasHeight-->
+<!--                :boxStop = boxStop-->
+<!--                :countLine = countLine-->
+<!--        ></stacked-bar-chart>-->
+
+<!--      </li>-->
+
+<!--      <li>-->
+<!--        <bar-chart-->
+<!--                nameChart ="Bar Chart"-->
+<!--                path = "contest/4"-->
+<!--                :isNight =  isNight-->
+<!--                :mainHeight  = mainHeight-->
+<!--                :prevWidth  = prevWidth-->
+<!--                :prevHeight  = prevHeight-->
+<!--                :prevShift  = prevShift-->
+<!--                :mainShift  = mainShift-->
+<!--                :mainCanvasHeight  = mainCanvasHeight-->
+<!--                :prevCanvasHeight = prevCanvasHeight-->
+<!--                :boxStop = boxStop-->
+<!--                :countLine = countLine-->
+<!--        ></bar-chart>-->
+
+<!--      </li>-->
       <li>
-        <stacked-bar-chart
-                nameChart ="Bar Chart"
-                path = "contest/3"
+        <percent-chart
+                nameChart ="Percentage stacked area chart "
+                path = "contest/5"
                 :isNight =  isNight
                 :mainHeight  = mainHeight
                 :prevWidth  = prevWidth
@@ -55,28 +90,9 @@
                 :prevCanvasHeight = prevCanvasHeight
                 :boxStop = boxStop
                 :countLine = countLine
-        ></stacked-bar-chart>
+        ></percent-chart>
 
       </li>
-
-      <li>
-        <bar-chart
-                nameChart ="Bar Chart"
-                path = "contest/4"
-                :isNight =  isNight
-                :mainHeight  = mainHeight
-                :prevWidth  = prevWidth
-                :prevHeight  = prevHeight
-                :prevShift  = prevShift
-                :mainShift  = mainShift
-                :mainCanvasHeight  = mainCanvasHeight
-                :prevCanvasHeight = prevCanvasHeight
-                :boxStop = boxStop
-                :countLine = countLine
-        ></bar-chart>
-
-      </li>
-
     </ul>
 
 </div>
@@ -87,6 +103,7 @@
 import LineChart from './components/LineChart.vue'
 import BarChart from './components/BarChart.vue'
 import StackedBarChart from './components/StackedBarChart.vue'
+import PercentChart from './components/PercentChart.vue'
 
 export default {
   data: function () {
@@ -154,7 +171,8 @@ export default {
   components: {
     LineChart,
     BarChart,
-    StackedBarChart
+    StackedBarChart,
+    PercentChart
   }
 }
 </script>

@@ -1110,7 +1110,7 @@
             console.log('mounted');
         },
 
-        name: "StackedBarChart",
+        name: "PercentChart",
 
 
     }

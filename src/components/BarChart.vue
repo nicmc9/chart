@@ -108,7 +108,8 @@
                 // набор цветов по умолчанию дневного режима можно переопределить на все графики
                 timeColor: this.$options.dayColor,
                 datesArr:[],
-                file:''
+                file:'',
+                infoboard:false
             }
         },
 
@@ -393,15 +394,17 @@
                 // self.timeId =  setInterval(function() {
                 //     self.drawInfoBoard();
                 // }, 50);
+                this.infoboard =true;
+                this.draw();
             },
             mainUp(){
 
                 console.log('я вышел');
                 this.touchBoard =false;
-
+                this.infoboard =false;
                 cancelAnimationFrame(this.timeId);
                 this.ctxBoard.clearRect(0, -this.mainHeight-(this.mainShift/2), this.prevWidth, this.mainCanvasHeight);
-
+                this.draw();
                 //clearInterval(this.timeId);
 
 
@@ -905,8 +908,11 @@
                     yCoord = [];
                 }
 
-                ctxMain.fillStyle = this.timeColor.fillPreview;
-                ctxMain.fillRect(0,-this.mainHeight,this.prevWidth, this.mainHeight);
+                if(this.infoboard){
+                    ctxMain.fillStyle = this.timeColor.fillPreview;
+                    ctxMain.fillRect(0,-this.mainHeight,this.prevWidth, this.mainHeight);
+                }
+
 
 
             },
