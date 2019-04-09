@@ -148,7 +148,7 @@
 
             },
             prevWidth:function () {
-                   let self =this;
+                let self =this;
                 this.$nextTick(function () {
                     self.init();
                 });
@@ -479,11 +479,8 @@
 
                  //Размеры шрифта
 
-
-
-
                 ctx.save();
-                ctx.strokeStyle=this.timeColor.box;                     ///
+                                 ///
                 drawVerticalLine();
 
                 ctx.shadowBlur = 2;                             ///
@@ -517,8 +514,7 @@
                 }else  if(xBoard+widthBoard >self.prevWidth){
                     xBoard = self.prevWidth -widthBoard-2;
                 }
-
-                drawArcs();
+                 ctx.fillStyle =this.timeColor.board;
                 drawBoard(xBoard, -self.mainHeight, widthBoard, hei,10);
                 //   drawBoard();
                 ctx.restore();
@@ -550,24 +546,6 @@
                     ctx.fill();
                 }
 
-
-                function drawArcs() {
-
-                    for(let i = 1; i < self.currentData.length; i++){
-
-                        ctx.strokeStyle = self.colors[self.activGraph[i-1]];
-
-                        let y = -self.currentData[i]/self.ratioMain[i-1];
-
-                        ctx.beginPath();
-                        ctx.arc(self.mouseX,y,5,0,Math.PI*2,true);
-                        ctx.fill();
-
-                        ctx.beginPath();
-                        ctx.arc(self.mouseX,y,5,0,Math.PI*2,true);
-                        ctx.stroke();
-                    }
-                }
 
                 function measureText() {
                     for(let i = 1; i < self.currentData.length; i++){
@@ -620,19 +598,17 @@
                 }
 
                 function drawVerticalLine() {
+                    ctx.fillStyle="#5188ed";
                     ctx.beginPath();
                     ctx.moveTo(self.mouseX,0);
                     ctx.lineTo(self.mouseX,-self.mainHeight);
-                    ctx.stroke();
+                    ctx.lineTo(self.mouseX+self.step,-self.mainHeight);
+                    ctx.lineTo(self.mouseX+self.step,0);
+                    ctx.fill();
                 }
 
                this.timeId = requestAnimationFrame(this.drawInfoBoard);
             },
-
-
-
-
-
 
 
             ///////////////////////////////////////////
@@ -712,15 +688,18 @@
             drawGraph(yCoord ,ctx,color,step){
               //  console.log('я рисую график');
                 let x = 0;
-                ctx.strokeStyle = color;
+                ctx.fillStyle = color;
+                ctx.lineWidth = 0;
                 ctx.beginPath();
-                ctx.moveTo(x,yCoord[0]);
-                for(let i=1; i < yCoord.length; i++){
-                    x += step;
+                for(let i=0; i < yCoord.length; i++){
+                    ctx.moveTo(x,0);
                     ctx.lineTo( x,yCoord[i]);
+                    ctx.lineTo( x+step,yCoord[i]);
+                    ctx.lineTo( x+step,0);
+                    x += step;
 
                 }
-                ctx.stroke();
+                ctx.fill();
             },
 
             drawBox(ctx){
@@ -910,12 +889,10 @@
                 }
             },
             drawPreviewGraphs(ctxPreview){
-
              //   console.log('я рисую превью графики');
                 for(let i = 0; i < this.previewCoord.length;i++ ) {
                     let tempArray =  this.previewCoord[i];
                     let color =   this.colors[this.activGraph[i]];
-
                     this.drawGraph(tempArray,ctxPreview,color,this.xStep);
                 }
             },
@@ -1081,13 +1058,14 @@
                 // Ставим линии пошире и рисуем
                 this.ctxMain.lineWidth = 2;
                 this.ctxPreview.lineWidth = 2;
-                // Заполняем массив превью коорд
-                // что бы потом его не персчитывать при перерисовке
-                // а только при смене графиков
+
                 this.boxXcoord=0;
                 this.boxWidth=this.prevWidth*0.3;
 
                 this.setDateArray();
+                // Заполняем массив превью коорд
+                // что бы потом его не персчитывать при перерисовке
+                // а только при смене графиков
                 this.setPreviewCoord();
 
 
@@ -1134,7 +1112,7 @@
             console.log('mounted');
         },
 
-        name: "LineChart",
+        name: "BarChart",
 
 
     }

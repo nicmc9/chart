@@ -8,10 +8,43 @@
 
 
     <ul class="select-chart">
+<!--      <li>-->
+<!--        <line-chart-->
+<!--                 nameChart ="LineChart"-->
+<!--                 path = "contest/1"-->
+<!--                :isNight =  isNight-->
+<!--                :mainHeight  = mainHeight-->
+<!--                :prevWidth  = prevWidth-->
+<!--                :prevHeight  = prevHeight-->
+<!--                :prevShift  = prevShift-->
+<!--                :mainShift  = mainShift-->
+<!--                :mainCanvasHeight  = mainCanvasHeight-->
+<!--                :prevCanvasHeight = prevCanvasHeight-->
+<!--                :boxStop = boxStop-->
+<!--                :countLine = countLine-->
+<!--                ></line-chart>-->
+
+<!--      </li>-->
+
+<!--      <li>-->
+<!--        <line-chart-->
+<!--                 nameChart ="LineChart 2Y axes"-->
+<!--                 path = "contest/2"-->
+<!--                :isNight =  isNight-->
+<!--                :mainHeight  = mainHeight-->
+<!--                :prevWidth  = prevWidth-->
+<!--                :prevHeight  = prevHeight-->
+<!--                :prevShift  = prevShift-->
+<!--                :mainShift  = mainShift-->
+<!--                :mainCanvasHeight  = mainCanvasHeight-->
+<!--                :prevCanvasHeight = prevCanvasHeight-->
+<!--                :boxStop = boxStop-->
+<!--                :countLine = countLine-->
+<!--        ></line-chart>-->
       <li>
-        <line-chart
-                 nameChart ="LineChart"
-                 path = "contest/1"
+        <bar-chart
+                nameChart ="Bar Chart"
+                path = "contest/4"
                 :isNight =  isNight
                 :mainHeight  = mainHeight
                 :prevWidth  = prevWidth
@@ -22,25 +55,7 @@
                 :prevCanvasHeight = prevCanvasHeight
                 :boxStop = boxStop
                 :countLine = countLine
-                ></line-chart>
-
-      </li>
-
-      <li>
-        <line-chart
-                 nameChart ="LineChart 2Y axes"
-                 path = "contest/2"
-                :isNight =  isNight
-                :mainHeight  = mainHeight
-                :prevWidth  = prevWidth
-                :prevHeight  = prevHeight
-                :prevShift  = prevShift
-                :mainShift  = mainShift
-                :mainCanvasHeight  = mainCanvasHeight
-                :prevCanvasHeight = prevCanvasHeight
-                :boxStop = boxStop
-                :countLine = countLine
-        ></line-chart>
+        ></bar-chart>
 
       </li>
 
@@ -52,6 +67,7 @@
 
 <script>
 import LineChart from './components/LineChart.vue'
+import BarChart from './components/BarChart.vue'
 
 export default {
   data: function () {
@@ -117,7 +133,8 @@ export default {
   },
   name: 'app',
   components: {
-    LineChart
+    LineChart,
+    BarChart
   }
 }
 </script>
@@ -128,8 +145,6 @@ export default {
  .select-chart{
    list-style: none;
    padding: 0;
-   /*padding-left: 30px;*/
-   /*padding-right: 30px;*/
    margin: auto;
   }
  .night-mode{
