@@ -99,7 +99,7 @@
                 timeId: 0,  // таймер для сброса анимации
                 mouseX:0,   // текущее положение мышки
                 mainCurrentData:[],  // массив значений из columns находящейся между start and end т.е. данные непосредственно сейчас отображаемые
-                currentData:[],  // данные из columns на которых сейчас инфоДоска
+                currentData:{},  // данные из columns на которых сейчас инфоДоска
                 step:0,  // шаг для координаты х на главном холсте
                 ratioMain: 1,   // отношение к системе координат холста и значений данных из colimns
                 // набор цветов по умолчанию дневного режима можно переопределить на все графики
@@ -108,7 +108,9 @@
                 file:'',
                 percentData:[],
                 mainCoord:[],
-                dataForBoard:[]
+                dataForBoard:[],
+                boardDate:null,
+                percentForBoard:[]
 
             }
         },
@@ -437,19 +439,25 @@
                         weekday: 'short',
                     };
 
-                    let date = new Date(self.dataForBoard[0][j]).toLocaleString("en-US",options);
+                    self.boardDate = new Date(self.dataForBoard[0][j]).toLocaleString("en-US",options);
 
-                    if(date === "Invalid Date"){
+                    if(self.boardDate === "Invalid Date"){
                         return;
                     }
+                  //  let D = {'y0': ['30%', 'Apples','37'],'y1':['25%', 'Mango','25'] };
+                     let D = {};
 
-                    self.currentData =[];
-                    self.currentData.push(date);
-                    for(let m = 1; m <self.dataForBoard.length; m++){
-
-                        self.currentData.push( self.dataForBoard[m][j]);
+                    for(let i = 0; i <self.activGraph.length; i++) {
+                         D[self.activGraph[i]] =[];
+                         D[self.activGraph[i]].push(self.percentForBoard[i][j]);
+                         D[self.activGraph[i]].push(self.names[self.activGraph[i]]);
+                         D[self.activGraph[i]].push(self.dataForBoard[i+1][j]);
                     }
-                 console.log('self.currentData',self.currentData);
+
+                    self.currentData = D;
+               console.log('D',D);
+
+
                 }
 
             },
@@ -457,13 +465,12 @@
 
                 let tempArray =[];
                 let yArray =[];
-                let data =[];
 
                 yArray  = this.columns[0];
 
                 tempArray = yArray.slice(this.start,this.end);
-                tempArray.unshift(yArray[0]);
-                data.push(tempArray);
+              //  tempArray.unshift(yArray[0]);
+                this.dataForBoard.push(tempArray);
 
                 for(let i = 1; i < this.columns.length;i++ ) {
                     yArray  = this.columns[i];
@@ -471,20 +478,20 @@
                         continue;
                     }
                     tempArray = yArray.slice(this.start,this.end);
-                    tempArray.unshift(yArray[0]);
-                    data.push(tempArray);
+                  //  tempArray.unshift(yArray[0]);
+                    this.dataForBoard.push(tempArray);
                 }
                 for(let i = 0; i < this.percentData.length;i++ ) {
                     yArray  = this.percentData[i];
 
                     tempArray = yArray.slice(this.start,this.end);
-                    tempArray.unshift(this.activGraph[i]);
-                    data.push(tempArray);
+                //    tempArray.unshift(this.activGraph[i]);
+                    this.percentForBoard.push(tempArray);
                 }
 
-                console.log('getDataForBoard',data);
+                console.log(' this.dataForBoard', this.dataForBoard);
+                console.log(' this.percentForBoard', this.percentForBoard);
 
-                return data;
 
             },
              drawInfoBoard(){
@@ -492,59 +499,52 @@
              console.log('я рисую доску');
                 let ctx = this.ctxBoard;
                 let self = this;
+                 let cDate = this.boardDate;
+                 let D = this.currentData;
 
                  ctx.clearRect(0, -this.mainHeight-(this.mainShift/2), this.prevWidth, this.mainCanvasHeight);
-                //Для доски и кружочков
-                ctx.fillStyle =this.timeColor.board;
-                // Используеться для вычислений и для установки размеров текущих данных///
 
-                 //Размеры шрифта
-                ctx.save();
-
-                ctx.shadowBlur = 2;                             ///
-                ctx.shadowColor = "rgba(0, 0, 0, 0.3)";         ///
-
-                let widthBoard = this.prevWidth/7;          // Начальная ширина доски 135
-                let hei = this.mainHeight/6;                 //Высота доски  100
-
-                let  textSize  =Math.round(hei*0.2);
-
-                const space = 20;
-                // значение отступа сверху подобрал эксперементально где-то 25 -30 нормально
-                // и перевел в динамику
-                const yS = hei/3.5;
-
-                //расстояние между словами
-                let name='';
-                let textWidthArr=[];
-                // первое значение дату пропускаем
-                //Сначала измеряем текст
-                 ctx.font="bold "+textSize+"px  sans-serif";
-                measureText();
-                // потом обновляем ширину
-                updateWidthBoard();
-                let xBoard = self.mouseX - widthBoard/2;  // устанавлием координату X доски
-                if(xBoard <=0){
-                    xBoard =2;
-                }else  if(xBoard+widthBoard >self.prevWidth){
-                    xBoard = self.prevWidth -widthBoard-2;
-                }
                  ctx.fillStyle =this.timeColor.board;
-                drawBoard(xBoard, -self.mainHeight, widthBoard, hei,10);
-                //   drawBoard();
-                ctx.restore();
 
-                ctx.lineWidth =2;
+                 // Сначала задали размер текста в зависимости от
+                 //размера  экрана
+                 let  textSize  =Math.round(this.mainHeight*0.03);
+                 ctx.font=textSize+"px  sans-serif";
 
-                 ctx.font="bold "+textSizeData+"px  sans-serif";
-                drawCurrentData();
+                 console.log("textSize",textSize);
+                 let widthTextString = 0;
+                 for (let item in D) {
+                   let str = D[item].join(' ');
+                    let w = measureText(str);
+                     if(w > widthTextString){
+                         widthTextString = w;
+                     }
+                 }
 
-                ctx.fillStyle =self.timeColor.textInfo;
-                 ctx.font=textSizeDate+"px  sans-serif";
-                drawDates();
+                 ctx.save();
 
-                 ctx.font=textSizeNames+"px  sans-serif";
-                drawNames();
+                 ctx.shadowBlur = 2;                             ///
+                 ctx.shadowColor = "rgba(0, 0, 0, 0.3)";         ///
+                 console.log("widthTextString",widthTextString);
+
+                 // Ширина доски  возьмем ширину текстовой строки и добавим 20%
+                 let widthBoard = widthTextString+widthTextString*0.4;
+                 let heightBoard = 100;
+                 let xBoard = self.mouseX - widthBoard/2;  // устанавлием координату X доски
+                 if(xBoard <=0){
+                     xBoard =2;
+                 }else  if(xBoard+widthBoard >self.prevWidth){
+                     xBoard = self.prevWidth -widthBoard-2;
+                 }
+                 console.log("widthBoard",widthBoard);
+
+                 drawBoard(xBoard, -self.mainHeight, widthBoard,heightBoard ,10);
+                 ctx.restore();
+
+                 ctx.lineWidth =2;
+
+                 drawCurrentData();
+
 
                 function drawBoard(x, y, width, height, radius) {
                     ctx.beginPath();
@@ -561,71 +561,31 @@
                     ctx.fill();
                 }
 
-
-                function measureText() {
-                    for(let i = 1; i < self.currentData.length; i++){
-                        let temp = ctx.measureText(self.currentData[i]);
-                        textWidthArr.push(temp.width);
-                    }
-                }
-
-                function updateWidthBoard() {
-                    let len = space;
-                    for(let i = 0; i < textWidthArr.length; i++){
-                        len += textWidthArr[i] + space;
-                    }
-                    if(len > widthBoard){
-                        widthBoard = len;
-                    }
-                }
-
-                function drawDates() {
-                    ctx.fillText(self.currentData[0], xBoard + space, -self.mainHeight + yS );
+                function measureText(str) {
+                        let temp = ctx.measureText(str);
+                        return temp.width;
                 }
 
                 function drawCurrentData() {
-                    let w=0;
-                    for(let i = 1,j = space; i < self.currentData.length; i++,j += space){
-                        ctx.fillStyle = self.colors[self.activGraph[i-1]];                           ////
-                        let d = formatDigits(self.currentData[i]);
-                        if(i === 1) {
-                            ctx.fillText(d, xBoard + j, -self.mainHeight + (yS*2));
-                        }else{
-                            w += textWidthArr[i-2];
-                            ctx.fillText(d, xBoard + j + w, -self.mainHeight + (yS*2));
-                        }
-                    }
+                  //  let D = {'y0': ['30%', 'Apples','37'],'y1':['25%', 'Mango','25'] };
+                    ctx.fillStyle = '#000';
+                    ctx.fillText(cDate, xBoard + 10, -self.mainHeight + textSize );
+                    let y = textSize*2;
+                    let rShift = xBoard + widthBoard -textSize*2;
+                    for (let item in D) {
+                        ctx.fillStyle = '#735f6e';
+                        let str = D[item][0]+'  '+D[item][1];
+                        let str2 = D[item][2];
+                        ctx.fillText(str,xBoard + 10,-self.mainHeight+y);
+                        ctx.fillStyle = self.colors[item];
+                        ctx.fillText(str2,rShift,-self.mainHeight+y);
+                        y += textSize;
+                  }
                 }
-                function formatDigits(digit){
-                        let d = +digit;
-                        d =  d.toLocaleString('ru');
-                        return d;
-
-
-                 }
-
-                function drawNames() {
-
-                    let w=0;
-                    for(let i = 1,j = space; i < self.currentData.length; i++,j += space){
-                        ctx.fillStyle = self.colors[self.activGraph[i-1]];
-                        name = self.names[self.activGraph[i-1]];
-                        if(i === 1) {
-                            ctx.fillText(name, xBoard + j, -self.mainHeight + (yS*3));
-                        }else{
-                            w += textWidthArr[i-2];
-                            ctx.fillText(name, xBoard + j + w, -self.mainHeight + (yS*3));
-                        }
-                    }
-                }
-
-
-               this.timeId = requestAnimationFrame(this.drawInfoBoard);
+             this.timeId = requestAnimationFrame(this.drawInfoBoard);
             },
 
-
             ///////////////////////////////////////////
-
 
             getCoords(elem) {
                 let box = elem.getBoundingClientRect();
@@ -658,7 +618,7 @@
                 console.log('this.mainCurrentData',this.mainCurrentData);
 
                 this.step =    this.prevWidth/(tempArray.length-1);
-                this.dataForBoard = this.getDataForBoard();
+                this.getDataForBoard();
 
             },
 
