@@ -620,13 +620,25 @@
                         y += textSize*1.4;
                     }
                 }
+
                 function drawVerticalLine() {
-                    ctx.strokeStyle =self.timeColor.gLine;
+                    //Не оптимизировано
+                    let y = self.mainHeight;
+                    ctx.fillStyle="#64ADED";
                     ctx.beginPath();
                     ctx.moveTo(self.mouseX,0);
-                    ctx.lineTo(self.mouseX,-self.mainHeight);
-                    ctx.stroke();
+                    ctx.lineTo(self.mouseX,-y);
+                    ctx.lineTo(self.mouseX+self.step,-y);
+                    ctx.lineTo(self.mouseX+self.step,0);
+                    ctx.fill();
                 }
+                // function drawVerticalLine() {
+                //     ctx.strokeStyle =self.timeColor.gLine;
+                //     ctx.beginPath();
+                //     ctx.moveTo(self.mouseX,0);
+                //     ctx.lineTo(self.mouseX,-self.mainHeight);
+                //     ctx.stroke();
+                // }
                 this.timeId = requestAnimationFrame(this.drawInfoBoard);
             },
 
