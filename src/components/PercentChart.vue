@@ -497,8 +497,9 @@
              drawInfoBoard(){
 
              console.log('я рисую доску');
-                let ctx = this.ctxBoard;
-                let self = this;
+                 let self = this;
+                 let ctx = this.ctxBoard;
+
                  let cDate = this.boardDate;
                  let D = this.currentData;
 
@@ -513,7 +514,10 @@
 
                  console.log("textSize",textSize);
                  let widthTextString = 0;
+                 //Для вычисления высоты борда количество элементо * на высоту строки
+                 let count =0;
                  for (let item in D) {
+                     count++;
                    let str = D[item].join(' ');
                     let w = measureText(str);
                      if(w > widthTextString){
@@ -529,7 +533,7 @@
 
                  // Ширина доски  возьмем ширину текстовой строки и добавим 20%
                  let widthBoard = widthTextString+widthTextString*0.4;
-                 let heightBoard = 100;
+                 let heightBoard = textSize*(count+2);
                  let xBoard = self.mouseX - widthBoard/2;  // устанавлием координату X доски
                  if(xBoard <=0){
                      xBoard =2;
@@ -571,14 +575,28 @@
                     ctx.fillStyle = '#000';
                     ctx.fillText(cDate, xBoard + 10, -self.mainHeight + textSize );
                     let y = textSize*2;
-                    let rShift = xBoard + widthBoard -textSize*2;
+                    let size =0;
+                    let etalon = '30%';
+                    let pos = measureText(etalon);
                     for (let item in D) {
+
+                        ctx.font="bold "+textSize+"px  sans-serif";
+
+                        ctx.fillStyle = '#000';
+                        let str1 = D[item][0]+'%';
+                        size = measureText(str1);
+                        ctx.fillText(str1,xBoard +5+ pos -size,-self.mainHeight+y);
+
+                        ctx.font=textSize+"px  sans-serif";
                         ctx.fillStyle = '#735f6e';
-                        let str = D[item][0]+'  '+D[item][1];
-                        let str2 = D[item][2];
-                        ctx.fillText(str,xBoard + 10,-self.mainHeight+y);
+                        let str2 = D[item][1];
+                        ctx.fillText(str2,xBoard + pos+10,-self.mainHeight+y);
+
+
                         ctx.fillStyle = self.colors[item];
-                        ctx.fillText(str2,rShift,-self.mainHeight+y);
+                        let str3 = D[item][2];
+                        size = measureText(str3);
+                        ctx.fillText(str3,xBoard + widthBoard -size-5,-self.mainHeight+y);
                         y += textSize;
                   }
                 }
