@@ -465,7 +465,8 @@
 
                 let tempArray =[];
                 let yArray =[];
-
+                this.dataForBoard=[];
+                this.percentForBoard=[];
                 yArray  = this.columns[0];
 
                 tempArray = yArray.slice(this.start,this.end);
@@ -534,13 +535,19 @@
                  // Ширина доски  возьмем ширину текстовой строки и добавим 20%
                  let widthBoard = widthTextString+widthTextString*0.4;
                  let heightBoard = textSize*(count+4);
-                 let xBoard = self.mouseX - widthBoard/2;  // устанавлием координату X доски
-                 if(xBoard <=0){
-                     xBoard =2;
-                 }else  if(xBoard+widthBoard >self.prevWidth){
-                     xBoard = self.prevWidth -widthBoard-2;
+                 // 2  это небольшой отступ от края
+                 // если true то слева
+                 let flag= true;
+                 let xBoard = self.mouseX+2;  // устанавлием координату X доски
+                 if(xBoard <=self.prevWidth/2){
+                     xBoard =self.mouseX+2;
+                     flag= true;
+                 }else {
+                     xBoard = self.mouseX - widthBoard-2;
+                     flag= false;
                  }
-                 console.log("widthBoard",widthBoard);
+                 console.log("self.prevWidth/2",self.prevWidth/2);
+                 console.log("xBoard",xBoard);
 
                  drawBoard(xBoard, -self.mainHeight, widthBoard,heightBoard ,10);
                  ctx.restore();
@@ -573,9 +580,16 @@
                 function drawCurrentData() {
                   //  let D = {'y0': ['30%', 'Apples','37'],'y1':['25%', 'Mango','25'] };
                     ctx.fillStyle = '#000';
-                    ctx.fillText(cDate, xBoard + 10, -self.mainHeight + textSize );
 
-                    ctx.fillText(">", xBoard + widthBoard -20, -self.mainHeight + textSize );
+                    if(!flag){
+                        ctx.fillText(cDate, xBoard + 10, -self.mainHeight + textSize );
+                        ctx.fillText(">", xBoard + widthBoard -20, -self.mainHeight + textSize );
+                    }else {
+                        let s = measureText(cDate);
+                        ctx.fillText(cDate, xBoard + widthBoard -s-20, -self.mainHeight + textSize );
+                        ctx.fillText("<", xBoard + 5, -self.mainHeight + textSize );
+                    }
+
 
                     let y = textSize*2.5;
                     let size =0;
