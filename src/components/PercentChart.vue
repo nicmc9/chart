@@ -2,7 +2,7 @@
 
     <div>
 <!--        <p>touchBoard -&#45;&#45; {{touchBoard}}  this.timeId -&#45;&#45;{{this.timeId}} </p>-->
-        <p>mainHeight-&#45;&#45; {{mainHeight}}  </p>
+
         <div class="stage"  :style="{width:prevWidth+'px',height:mainCanvasHeight+'px'}">
 
             <canvas ref="board" :width = "prevWidth" :height="mainCanvasHeight"
@@ -107,7 +107,8 @@
                 datesArr:[],
                 file:'',
                 percentData:[],
-                mainCoord:[]
+                mainCoord:[],
+                dataForBoard:[]
 
             }
         },
@@ -174,13 +175,8 @@
             end: function () {
                 return Math.ceil( this.start + this.boxWidth/this.xStep);
             },
-            // Высляються цифры в левой шкале
-            metric1YValue: function () {
-                let val = this.maxValue/this.countLine-1;  //this.countLine-1
-                return Math.ceil(val);
-            },
-           shiftY: function () {
-                return  this.mainHeight/this.countLine;
+            shiftY: function () {
+                return  this.mainHeight/(this.countLine-1);
             },
         },
 
@@ -389,24 +385,17 @@
                 console.log('я вошел');
                 if(!this.activGraph.length) return;
                 this.touchBoard =true;
-                this.infoboard =true;
                 this.timeId = requestAnimationFrame(this.drawInfoBoard);
-                // self.timeId =  setInterval(function() {
-                //     self.drawInfoBoard();
-                // }, 50);
-             this.draw();
+                this.draw();
 
             },
             mainUp(){
 
                 console.log('я вышел');
                 this.touchBoard =false;
-                this.infoboard =false;
                 cancelAnimationFrame(this.timeId);
                 this.ctxBoard.clearRect(0, -this.mainHeight-(this.mainShift/2), this.prevWidth, this.mainCanvasHeight);
                 this.draw();
-                //clearInterval(this.timeId);
-
 
             },
 
@@ -418,11 +407,10 @@
                     let mouse = event.pageX-this.xOffset;
                     this.boardData(mouse);
                 }else{
-
                    // event.preventDefault();
                     let touches = event.changedTouches;
                     let mouse = touches[0].pageX-this.xOffset;
-                     this.boardData(mouse);
+                    this.boardData(mouse);
                 }
             },
            boardData(mouse){
@@ -448,22 +436,55 @@
                         day: 'numeric',
                         weekday: 'short',
                     };
-              //      console.log('j',j);
-              //      console.log('self.mainCurrentData.length',self.mainCurrentData[0].length);
 
-                    let date = new Date(self.mainCurrentData[0][j]).toLocaleString("en-US",options);
+                    let date = new Date(self.dataForBoard[0][j]).toLocaleString("en-US",options);
+
                     if(date === "Invalid Date"){
                         return;
                     }
 
                     self.currentData =[];
                     self.currentData.push(date);
-                    for(let m = 1; m <self.mainCurrentData.length; m++){
+                    for(let m = 1; m <self.dataForBoard.length; m++){
 
-                        self.currentData.push( self.mainCurrentData[m][j]);
+                        self.currentData.push( self.dataForBoard[m][j]);
                     }
-                   // console.log('self.currentData',self.currentData);
+                 console.log('self.currentData',self.currentData);
                 }
+
+            },
+            getDataForBoard(){
+
+                let tempArray =[];
+                let yArray =[];
+                let data =[];
+
+                yArray  = this.columns[0];
+
+                tempArray = yArray.slice(this.start,this.end);
+                tempArray.unshift(yArray[0]);
+                data.push(tempArray);
+
+                for(let i = 1; i < this.columns.length;i++ ) {
+                    yArray  = this.columns[i];
+                    if(this.activGraph.indexOf(yArray[0])=== -1){
+                        continue;
+                    }
+                    tempArray = yArray.slice(this.start,this.end);
+                    tempArray.unshift(yArray[0]);
+                    data.push(tempArray);
+                }
+                for(let i = 0; i < this.percentData.length;i++ ) {
+                    yArray  = this.percentData[i];
+
+                    tempArray = yArray.slice(this.start,this.end);
+                    tempArray.unshift(this.activGraph[i]);
+                    data.push(tempArray);
+                }
+
+                console.log('getDataForBoard',data);
+
+                return data;
 
             },
              drawInfoBoard(){
@@ -478,10 +499,7 @@
                 // Используеться для вычислений и для установки размеров текущих данных///
 
                  //Размеры шрифта
-
                 ctx.save();
-                                 ///
-                drawVerticalLine();
 
                 ctx.shadowBlur = 2;                             ///
                 ctx.shadowColor = "rgba(0, 0, 0, 0.3)";         ///
@@ -489,12 +507,9 @@
                 let widthBoard = this.prevWidth/7;          // Начальная ширина доски 135
                 let hei = this.mainHeight/6;                 //Высота доски  100
 
+                let  textSize  =Math.round(hei*0.2);
 
-                 let  textSizeData = Math.round(hei*0.25);
-                 let  textSizeDate  =Math.round(hei*0.2);
-                 let  textSizeNames  = Math.round(hei*0.2);
                 const space = 20;
-
                 // значение отступа сверху подобрал эксперементально где-то 25 -30 нормально
                 // и перевел в динамику
                 const yS = hei/3.5;
@@ -504,7 +519,7 @@
                 let textWidthArr=[];
                 // первое значение дату пропускаем
                 //Сначала измеряем текст
-                 ctx.font="bold "+textSizeData+"px  sans-serif";
+                 ctx.font="bold "+textSize+"px  sans-serif";
                 measureText();
                 // потом обновляем ширину
                 updateWidthBoard();
@@ -604,17 +619,6 @@
                     }
                 }
 
-                function drawVerticalLine() {
-                    //Не оптимизировано
-                    let y = self.currentData[1]/self.ratioMain;
-                    ctx.fillStyle="#64ADED";
-                    ctx.beginPath();
-                    ctx.moveTo(self.mouseX,0);
-                    ctx.lineTo(self.mouseX,-y);
-                    ctx.lineTo(self.mouseX+self.step,-y);
-                    ctx.lineTo(self.mouseX+self.step,0);
-                    ctx.fill();
-                }
 
                this.timeId = requestAnimationFrame(this.drawInfoBoard);
             },
@@ -654,25 +658,11 @@
                 console.log('this.mainCurrentData',this.mainCurrentData);
 
                 this.step =    this.prevWidth/(tempArray.length-1);
+                this.dataForBoard = this.getDataForBoard();
 
             },
 
-            // drawGraph(yCoord ,ctx,color,step){
-            //   //  console.log('я рисую график');
-            //     let x = 0;
-            //     ctx.fillStyle = color;
-            //     ctx.lineWidth = 0;
-            //     ctx.beginPath();
-            //     for(let i=0; i < yCoord.length; i++){
-            //         ctx.moveTo(x,0);
-            //         ctx.lineTo( x,yCoord[i]);
-            //         ctx.lineTo( x+step,yCoord[i]);
-            //         ctx.lineTo( x+step,0);
-            //         x += step;
-            //
-            //     }
-            //     ctx.fill();
-            // },
+
             drawGraph(yCoord ,ctx,color,step){
 
 
@@ -831,14 +821,13 @@
               //  ctx.fillStyle = "#000";
 
                 ctx.beginPath();
-                ctx.fillText("0", 5, -5);
-                for(let i =1 ; i < this.countLine+1 ; i++){
-
-                    let z = Math.round((this.metric1YValue*i)/1000000);
-                    z = z+"M";
+                const step = 25;
+                let text =0;
+                for(let i =0 ; i < this.countLine ; i++){
                     ctx.moveTo(0,-this.shiftY*i);
                     ctx.lineTo(this.prevWidth ,-this.shiftY*i);
-                    ctx.fillText(z, 5, -this.shiftY*i-5);
+                    ctx.fillText(text, 5, -this.shiftY*i-5);
+                    text +=step;
                 }
                 ctx.stroke();
 
@@ -1051,12 +1040,12 @@
                 let chiftM = this.mainHeight+(this.mainShift/2);
                 let chiftP = this.prevHeight+(this.prevShift/2);
 
-                console.log('this.mainHeight',this.mainHeight);
-                console.log('this.prevHeight',this.prevHeight);
-                console.log('this.mainCanvasHeight',this.mainCanvasHeight);
-                console.log('this.prevCanvasHeight',this.prevCanvasHeight);
-                console.log('chiftM',chiftM);
-                console.log('chiftP',chiftP);
+                // console.log('this.mainHeight',this.mainHeight);
+                // console.log('this.prevHeight',this.prevHeight);
+                // console.log('this.mainCanvasHeight',this.mainCanvasHeight);
+                // console.log('this.prevCanvasHeight',this.prevCanvasHeight);
+                // console.log('chiftM',chiftM);
+                // console.log('chiftP',chiftP);
 
                 //переводим сисмему координат на низ холста
                 this.ctxPreview.translate(0,chiftP); //сдвиг по высоте
