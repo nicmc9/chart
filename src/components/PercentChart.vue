@@ -117,17 +117,18 @@
 
         dayColor:{
             fillPreview:"rgba(245,249,251,0.5)",
-            box:"rgba(221,234,243,0.5)",
-            metrics:"rgba(139,147,153)",
+            box:"rgba(168,180,189,0.5)",
+            metrics:"rgb(67,73,79)",
             gLine:"rgba(221,234,243,0.5)",
             textInfo: "#000",
             board: "#fff",
+            test: "#C0D1E1",
         },
 
         nightColor:{
             fillPreview:"rgba(31,42,56,0.5)",
-            box:"rgba(95,128,158,0.5)",
-            metrics:"rgba(95,128,158)",
+            box:"rgba(61,89,119,0.5)",
+            metrics:"rgb(158,204,249)",
             gLine:"rgba(64,86,107,0.2)",
             textInfo: "#fff",
             board: "#2b384a",
@@ -553,7 +554,7 @@
                  ctx.restore();
 
                  ctx.lineWidth =2;
-
+                 drawVerticalLine();
                  drawCurrentData();
 
 
@@ -579,7 +580,7 @@
 
                 function drawCurrentData() {
                   //  let D = {'y0': ['30%', 'Apples','37'],'y1':['25%', 'Mango','25'] };
-                    ctx.fillStyle = '#000';
+                    ctx.fillStyle = self.timeColor.textInfo;
 
                     if(!flag){
                         ctx.fillText(cDate, xBoard + 10, -self.mainHeight + textSize );
@@ -599,13 +600,13 @@
 
                         ctx.font="bold "+textSize+"px  sans-serif";
 
-                        ctx.fillStyle = '#000';
+                        ctx.fillStyle = self.timeColor.textInfo;
                         let str1 = D[item][0]+'%';
                         size = measureText(str1);
                         ctx.fillText(str1,xBoard +5+ pos -size,-self.mainHeight+y);
 
                         ctx.font=textSize+"px  sans-serif";
-                        ctx.fillStyle = '#735f6e';
+                        ctx.fillStyle = self.timeColor.textInfo;
                         let str2 = D[item][1];
                         ctx.fillText(str2,xBoard + pos+10,-self.mainHeight+y);
 
@@ -617,6 +618,13 @@
                         y += textSize*1.2;
                   }
                 }
+                 function drawVerticalLine() {
+                    ctx.strokeStyle =self.timeColor.gLine;
+                     ctx.beginPath();
+                     ctx.moveTo(self.mouseX,0);
+                     ctx.lineTo(self.mouseX,-self.mainHeight);
+                     ctx.stroke();
+                 }
              this.timeId = requestAnimationFrame(this.drawInfoBoard);
             },
 
@@ -683,7 +691,6 @@
 
                 // Затем главный бокс
                 let d = this.prevShift/2; // Раньше было 5
-
 
                 let widthLine = 15;
                 let r =widthLine/2;  //r нам нужен чтобы рамка рисовалась внутри холста без него она выходит за холст на половину
@@ -954,13 +961,13 @@
                 this.setCurrentMainData();
 
                 //Коробка предпросмотра
-                this.drawBox(ctxPreview);
+
                 ctxPreview.lineWidth =2;  // восстановили значение
 
 
                 this.drawGraphs(ctxPreview,this.previewCoord,this.xStep);
                 this.drawGraphs(ctxMain,this.mainCurrentData,this.step);
-
+                this.drawBox(ctxPreview);
                 this.drawMetrics(ctxMain);
                 // Все графики
                 // Затенение оставшейся части предпросмотра
