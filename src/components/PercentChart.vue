@@ -880,7 +880,7 @@
                 console.log('this.percentData',this.percentData)
             },
 
-            setCoord(percentCoord,height){
+            getCoord(percentCoord, height){
 
                let coord =[];
                let yCoord = [];
@@ -1008,9 +1008,9 @@
                 this.setPercentData();
 
                 let percent = this.prevHeight*0.01;
-                this.previewCoord = this.setCoord(percent,this.prevHeight);
+                this.previewCoord = this.getCoord(percent,this.prevHeight);
                 percent = this.mainHeight*0.01;
-                this.mainCoord = this.setCoord(percent,this.mainHeight);
+                this.mainCoord = this.getCoord(percent,this.mainHeight);
 
                 console.log('this.previewCoord',this.previewCoord);
                 console.log('this.mainCoord',this.mainCoord);

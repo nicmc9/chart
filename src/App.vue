@@ -41,23 +41,23 @@
 <!--                :boxStop = boxStop-->
 <!--                :countLine = countLine-->
 <!--        ></line-chart>-->
-<!--      <li>-->
-<!--        <stacked-bar-chart-->
-<!--                nameChart ="Bar Chart"-->
-<!--                path = "contest/3"-->
-<!--                :isNight =  isNight-->
-<!--                :mainHeight  = mainHeight-->
-<!--                :prevWidth  = prevWidth-->
-<!--                :prevHeight  = prevHeight-->
-<!--                :prevShift  = prevShift-->
-<!--                :mainShift  = mainShift-->
-<!--                :mainCanvasHeight  = mainCanvasHeight-->
-<!--                :prevCanvasHeight = prevCanvasHeight-->
-<!--                :boxStop = boxStop-->
-<!--                :countLine = countLine-->
-<!--        ></stacked-bar-chart>-->
+      <li>
+        <stacked-bar-chart
+                nameChart ="Bar Chart"
+                path = "contest/3"
+                :isNight =  isNight
+                :mainHeight  = mainHeight
+                :prevWidth  = prevWidth
+                :prevHeight  = prevHeight
+                :prevShift  = prevShift
+                :mainShift  = mainShift
+                :mainCanvasHeight  = mainCanvasHeight
+                :prevCanvasHeight = prevCanvasHeight
+                :boxStop = boxStop
+                :countLine = countLine
+        ></stacked-bar-chart>
 
-<!--      </li>-->
+      </li>
 
 <!--      <li>-->
 <!--        <bar-chart-->
@@ -76,23 +76,23 @@
 <!--        ></bar-chart>-->
 
 <!--      </li>-->
-      <li>
-        <percent-chart
-                nameChart ="Percentage stacked area chart "
-                path = "contest/5"
-                :isNight =  isNight
-                :mainHeight  = mainHeight
-                :prevWidth  = prevWidth
-                :prevHeight  = prevHeight
-                :prevShift  = prevShift
-                :mainShift  = mainShift
-                :mainCanvasHeight  = mainCanvasHeight
-                :prevCanvasHeight = prevCanvasHeight
-                :boxStop = boxStop
-                :countLine = countLine
-        ></percent-chart>
+<!--      <li>-->
+<!--        <percent-chart-->
+<!--                nameChart ="Percentage stacked area chart "-->
+<!--                path = "contest/5"-->
+<!--                :isNight =  isNight-->
+<!--                :mainHeight  = mainHeight-->
+<!--                :prevWidth  = prevWidth-->
+<!--                :prevHeight  = prevHeight-->
+<!--                :prevShift  = prevShift-->
+<!--                :mainShift  = mainShift-->
+<!--                :mainCanvasHeight  = mainCanvasHeight-->
+<!--                :prevCanvasHeight = prevCanvasHeight-->
+<!--                :boxStop = boxStop-->
+<!--                :countLine = countLine-->
+<!--        ></percent-chart>-->
 
-      </li>
+<!--      </li>-->
     </ul>
 
 </div>

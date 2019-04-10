@@ -105,11 +105,14 @@
                 currentData:[],  // данные из columns на которых сейчас инфоДоска
                 step:0,  // шаг для координаты х на главном холсте
                 ratioMain: 1,   // отношение к системе координат холста и значений данных из colimns
+                ratioPrev: 1,   // отношение к системе координат холста и значений данных из colimns
                 // набор цветов по умолчанию дневного режима можно переопределить на все графики
                 timeColor: this.$options.dayColor,
                 datesArr:[],
                 file:'',
-                infoboard:false
+                infoboard:false,
+                mainCoord:[],
+                dataForBoard:[]
             }
         },
 
@@ -205,8 +208,8 @@
                     this.activGraph.splice(index,1);
                 }
                 if(this.activGraph.length){
-                    this.setPreviewCoord();
-                    this.draw();
+                    this.basePercentData();
+                    console.log('this.activGraph',this.activGraph);
 
                 }else{
                     this.defaultDraw();
@@ -426,9 +429,9 @@
                      this.boardData(mouse);
                 }
             },
-           boardData(mouse){
+            boardData(mouse){
                 let self = this;
-               console.log('mouse',mouse);
+                console.log('mouse',mouse);
 
                 for ( let i =0,j =0; i< self.prevWidth; i+=self.step,j++){
                     let prev = i-self.step;
@@ -449,88 +452,123 @@
                         day: 'numeric',
                         weekday: 'short',
                     };
-              //      console.log('j',j);
-              //      console.log('self.mainCurrentData.length',self.mainCurrentData[0].length);
 
-                    let date = new Date(self.mainCurrentData[0][j]).toLocaleString("en-US",options);
-                    if(date === "Invalid Date"){
+                    self.boardDate = new Date(self.dataForBoard[0][j]).toLocaleString("en-US",options);
+
+                    if(self.boardDate === "Invalid Date"){
                         return;
                     }
+                    //  let D = {'y0': ['30%', 'Apples','37'],'y1':['25%', 'Mango','25'] };
+                    let D = {};
+                    let sum = 0;
+                    for(let i = 0; i <self.activGraph.length; i++) {
+                        D[self.activGraph[i]] =[];
+                        D[self.activGraph[i]].push(self.names[self.activGraph[i]]);
+                        D[self.activGraph[i]].push(self.dataForBoard[i+1][j]);
 
-                    self.currentData =[];
-                    self.currentData.push(date);
-                    for(let m = 1; m <self.mainCurrentData.length; m++){
-
-                        self.currentData.push( self.mainCurrentData[m][j]);
+                        sum += self.dataForBoard[i+1][j];
                     }
-                   // console.log('self.currentData',self.currentData);
+
+
+
+                    D['All'] =['All',sum];
+
+                    self.currentData = D;
+                    console.log('D',D);
+
+
                 }
 
             },
-             drawInfoBoard(){
+            getDataForBoard(){
 
-             console.log('я рисую доску');
-                let ctx = this.ctxBoard;
+                let tempArray =[];
+                let yArray =[];
+                this.dataForBoard=[];
+                yArray  = this.columns[0];
+
+                tempArray = yArray.slice(this.start,this.end);
+                this.dataForBoard.push(tempArray);
+
+                // for(let i = 1; i < this.columns.length;i++ ) {
+                //     yArray  = this.columns[i];
+                //     if(this.activGraph.indexOf(yArray[0])=== -1){
+                //         continue;
+                //     }
+                //     tempArray = yArray.slice(this.start,this.end);
+                //     //  tempArray.unshift(yArray[0]);
+                //     this.dataForBoard.push(tempArray);
+                // }
+                for (let i =0; i<this.mainCurrentData.length;i++){
+                    tempArray = this.mainCurrentData[i];
+                    this.dataForBoard.push(tempArray);
+                }
+
+                console.log(' this.dataForBoard', this.dataForBoard);
+             //   console.log(' this.main', this.mainCurrentData);
+
+            },
+            drawInfoBoard(){
+
+                console.log('я рисую доску');
                 let self = this;
+                let ctx = this.ctxBoard;
 
-                 ctx.clearRect(0, -this.mainHeight-(this.mainShift/2), this.prevWidth, this.mainCanvasHeight);
-                //Для доски и кружочков
+                let cDate = this.boardDate;
+                let D = this.currentData;
+
+                ctx.clearRect(0, -this.mainHeight-(this.mainShift/2), this.prevWidth, this.mainCanvasHeight);
+
                 ctx.fillStyle =this.timeColor.board;
-                // Используеться для вычислений и для установки размеров текущих данных///
 
-                 //Размеры шрифта
+                // Сначала задали размер текста в зависимости от
+                //размера  экрана
+                let  textSize  =Math.round(this.mainHeight*0.03);
+                ctx.font=textSize+"px  sans-serif";
+
+                console.log("textSize",textSize);
+                let widthTextString = 0;
+                //Для вычисления высоты борда количество элементо * на высоту строки
+                let count =0;
+                for (let item in D) {
+                    count++;
+                    let str = D[item].join(' ');
+                    let w = measureText(str);
+                    if(w > widthTextString){
+                        widthTextString = w;
+                    }
+                }
 
                 ctx.save();
-                                 ///
-                drawVerticalLine();
 
                 ctx.shadowBlur = 2;                             ///
                 ctx.shadowColor = "rgba(0, 0, 0, 0.3)";         ///
+                console.log("widthTextString",widthTextString);
 
-                let widthBoard = this.prevWidth/7;          // Начальная ширина доски 135
-                let hei = this.mainHeight/6;                 //Высота доски  100
-
-
-                 let  textSizeData = Math.round(hei*0.25);
-                 let  textSizeDate  =Math.round(hei*0.2);
-                 let  textSizeNames  = Math.round(hei*0.2);
-                const space = 20;
-
-                // значение отступа сверху подобрал эксперементально где-то 25 -30 нормально
-                // и перевел в динамику
-                const yS = hei/3.5;
-
-                //расстояние между словами
-                let name='';
-                let textWidthArr=[];
-                // первое значение дату пропускаем
-                //Сначала измеряем текст
-                 ctx.font="bold "+textSizeData+"px  sans-serif";
-                measureText();
-                // потом обновляем ширину
-                updateWidthBoard();
-                let xBoard = self.mouseX - widthBoard/2;  // устанавлием координату X доски
-                if(xBoard <=0){
-                    xBoard =2;
-                }else  if(xBoard+widthBoard >self.prevWidth){
-                    xBoard = self.prevWidth -widthBoard-2;
+                // Ширина доски  возьмем ширину текстовой строки и добавим 20%
+                let widthBoard = widthTextString+widthTextString*0.4;
+                let heightBoard = textSize*(count+5);
+                // 2  это небольшой отступ от края
+                // если true то слева
+                let flag= true;
+                let xBoard = self.mouseX+2;  // устанавлием координату X доски
+                if(xBoard <=self.prevWidth/2){
+                    xBoard =self.mouseX+2;
+                    flag= true;
+                }else {
+                    xBoard = self.mouseX - widthBoard-2;
+                    flag= false;
                 }
-                 ctx.fillStyle =this.timeColor.board;
-                drawBoard(xBoard, -self.mainHeight, widthBoard, hei,10);
-                //   drawBoard();
+                console.log("self.prevWidth/2",self.prevWidth/2);
+                console.log("xBoard",xBoard);
+
+                drawBoard(xBoard, -self.mainHeight, widthBoard,heightBoard ,10);
                 ctx.restore();
 
                 ctx.lineWidth =2;
-
-                 ctx.font="bold "+textSizeData+"px  sans-serif";
+                drawVerticalLine();
                 drawCurrentData();
 
-                ctx.fillStyle =self.timeColor.textInfo;
-                 ctx.font=textSizeDate+"px  sans-serif";
-                drawDates();
-
-                 ctx.font=textSizeNames+"px  sans-serif";
-                drawNames();
 
                 function drawBoard(x, y, width, height, radius) {
                     ctx.beginPath();
@@ -547,77 +585,49 @@
                     ctx.fill();
                 }
 
-
-                function measureText() {
-                    for(let i = 1; i < self.currentData.length; i++){
-                        let temp = ctx.measureText(self.currentData[i]);
-                        textWidthArr.push(temp.width);
-                    }
-                }
-
-                function updateWidthBoard() {
-                    let len = space;
-                    for(let i = 0; i < textWidthArr.length; i++){
-                        len += textWidthArr[i] + space;
-                    }
-                    if(len > widthBoard){
-                        widthBoard = len;
-                    }
-                }
-
-                function drawDates() {
-                    ctx.fillText(self.currentData[0], xBoard + space, -self.mainHeight + yS );
+                function measureText(str) {
+                    let temp = ctx.measureText(str);
+                    return temp.width;
                 }
 
                 function drawCurrentData() {
-                    let w=0;
-                    for(let i = 1,j = space; i < self.currentData.length; i++,j += space){
-                        ctx.fillStyle = self.colors[self.activGraph[i-1]];                           ////
-                        let d = formatDigits(self.currentData[i]);
-                        if(i === 1) {
-                            ctx.fillText(d, xBoard + j, -self.mainHeight + (yS*2));
-                        }else{
-                            w += textWidthArr[i-2];
-                            ctx.fillText(d, xBoard + j + w, -self.mainHeight + (yS*2));
-                        }
+                    //  let D = {'y0': ['30%', 'Apples','37'],'y1':['25%', 'Mango','25'] };
+                    ctx.fillStyle = self.timeColor.textInfo;
+                    ctx.font="bold "+textSize+"px  sans-serif";
+                    if(!flag){
+                        ctx.fillText(cDate, xBoard + 10, -self.mainHeight + textSize );
+                        ctx.fillText(">", xBoard + widthBoard -20, -self.mainHeight + textSize );
+                    }else {
+                        let s = measureText(cDate);
+                        ctx.fillText(cDate, xBoard + widthBoard -s-20, -self.mainHeight + textSize );
+                        ctx.fillText("<", xBoard + 5, -self.mainHeight + textSize );
+                    }
+                    ctx.font=textSize+"px  sans-serif";
+                    let y = textSize*2.5;
+                    let size =0;
+
+                    for (let item in D) {
+
+                        ctx.fillStyle = self.timeColor.textInfo;
+                        let str1 = D[item][0];
+                        size = measureText(str1);
+                        ctx.fillText(str1,xBoard +5,-self.mainHeight+y);
+
+                        ctx.fillStyle = self.colors[item];
+                        let str3 = D[item][1];
+                        size = measureText(str3);
+                        ctx.fillText(str3,xBoard + widthBoard -size-5,-self.mainHeight+y);
+                        y += textSize*1.4;
                     }
                 }
-                function formatDigits(digit){
-                        let d = +digit;
-                        d =  d.toLocaleString('ru');
-                        return d;
-
-
-                 }
-
-                function drawNames() {
-
-                    let w=0;
-                    for(let i = 1,j = space; i < self.currentData.length; i++,j += space){
-                        ctx.fillStyle = self.colors[self.activGraph[i-1]];
-                        name = self.names[self.activGraph[i-1]];
-                        if(i === 1) {
-                            ctx.fillText(name, xBoard + j, -self.mainHeight + (yS*3));
-                        }else{
-                            w += textWidthArr[i-2];
-                            ctx.fillText(name, xBoard + j + w, -self.mainHeight + (yS*3));
-                        }
-                    }
-                }
-
                 function drawVerticalLine() {
-                    //Не оптимизировано
-                    let y = self.currentData[1]/self.ratioMain;
-                    ctx.fillStyle="#64ADED";
+                    ctx.strokeStyle =self.timeColor.gLine;
                     ctx.beginPath();
                     ctx.moveTo(self.mouseX,0);
-                    ctx.lineTo(self.mouseX,-y);
-                    ctx.lineTo(self.mouseX+self.step,-y);
-                    ctx.lineTo(self.mouseX+self.step,0);
-                    ctx.fill();
+                    ctx.lineTo(self.mouseX,-self.mainHeight);
+                    ctx.stroke();
                 }
-
-               this.timeId = requestAnimationFrame(this.drawInfoBoard);
+                this.timeId = requestAnimationFrame(this.drawInfoBoard);
             },
 
 
@@ -633,66 +643,123 @@
             },
 
 /////////////////////////  draw() /////////////////////////////////////////
+//             getSumData(data){
+//                 let sum = 0;
+//                 let sumData =[];
+//                 // Идем по длинне всех данных за длинну  взяли массив времени
+//                 let len = this.columns[0].length;
+//
+//                 for(let i = 1; i < len;i++ ) {
+//
+//                     for(let j = 1 ; j < this.columns.length; j++ ) {
+//                         let yArray  = this.columns[j];
+//                         if(this.activGraph.indexOf(yArray[0])=== -1){
+//                             continue;
+//                         }
+//                         sum += yArray[i];
+//                     }
+//                     sumData.push(sum);
+//                     sum = 0;
+//                 }
+//
+//                 console.log('this.sumData',sumData) ;
+//                 return sumData;
+//             },
+            getSumData(data,init){
+
+                let sum = 0;
+                let sumData =[];
+                // Идем по длинне всех данных за длинну  взяли массив времени
+                let len = data[0].length;
+
+                for(let i = init; i < len;i++ ) {
+
+                    for(let j = init ; j < data.length; j++ ) {
+                        let yArray  = data[j];
+                        sum += yArray[i];
+                    }
+                    sumData.push(sum);
+                    sum = 0;
+                }
+
+                console.log('this.sumData',sumData) ;
+                return sumData;
+            },
+
+            getRatio(height,sum){
+
+                let max = Math.max.apply(null,sum);
+                let rait = max/height;
+                rait = Math.round(rait * 100) / 100;
+                console.log('rait ',rait);
+                return rait;
+            },
 
 
-            setCurrentMainData(){
+
+    getCoord(ratio,data, init){
+
+                console.log('data coord',data, init);
+                let coord =[];
+                let yCoord = [];
+
+                for(let i = init; i < data.length;i++ ) {
+                    let yArray  = data[i];
+                    // console.log('yArray ',yArray );
+                    // if(this.activGraph.indexOf(yArray[0])=== -1){
+                    //     continue;
+                    // }
+                    for(let j = init ; j < yArray.length; j++ ) {
+                        let cor = -yArray[j]/ratio;
+
+                        if(i>=(init+1)){
+                            let early =  coord[i-(init+1)][j-init];
+                            yCoord.push(cor + early);
+                        }else{
+                            yCoord.push(cor);           //Переводим в отрицательную плоскость canvas
+                        }
+
+                    }
+
+                    coord.push(yCoord);
+                    yCoord = [];
+                }
+                return coord;
+            },
+
+            getCurrentMainData(){
 
                 let tempArray =[];
-                this.mainData=[];
+                let data =[];
+                let yArray =[];
 
-                let yArray  = this.columns[0];
-                tempArray = yArray.slice(this.start,this.end);
-                this.mainCurrentData.push(tempArray);
-
-                //В цикле только данные по Y
                 for(let i = 1; i < this.columns.length;i++ ) {
                     yArray  = this.columns[i];
                     if(this.activGraph.indexOf(yArray[0]) === -1){
                         continue;
                     }
                     tempArray = yArray.slice(this.start,this.end);
-                    this.mainCurrentData.push(tempArray);
+                    data.push(tempArray);
                 }
+                console.log('data',data);
+
                 this.step =    this.prevWidth/(tempArray.length-1);
 
+                return data;
+
             },
 
-            getPreviewRatio(){
-
-                let ratioPreview = 1;
-                let maxValue = [];
-                //Пропускаем первый элемент массива содержащий даты
-                for(let i = 1; i < this.columns.length;i++ ){
-                    let y  = this.columns[i];
-                    if(this.activGraph.indexOf(y[0])=== -1){
-                        continue;
-                    }
-                    let temp = y[0];
-                    y[0]=0;  //MAth.max работает только с цифрами
-                    maxValue.push(Math.max.apply(null,y));
-                    y[0]=temp;
-               }
-
-                let max = Math.max.apply(null,maxValue);
-                ratioPreview = max/this.prevHeight;
-                ratioPreview  = Math.round(ratioPreview * 100) / 100;
-
-                return ratioPreview;
-            },
-
-            setMainRatio(){
-                let maxValue = [];
 
 
-                for(let i = 1; i < this.mainCurrentData.length; i++ ){
-                    let y  = this.mainCurrentData[i];
-                 maxValue.push(Math.max.apply(null,y));
+            drawGraphs(ctx,data,step){
+
+                for(let i = data.length-1; i >=0 ;i-- ) {
+
+                    let tempArray =  data[i];
+                    let color =   this.colors[this.activGraph[i]];
+                    this.drawGraph(tempArray,ctx,color,step);
                 }
 
-                this.maxValue = Math.max.apply(null,maxValue);
-                this.ratioMain = this.maxValue/this.mainHeight;
-                this.ratioMain  = Math.round(this.ratioMain * 100) / 100;
-             console.log('this.ratioMain',this.ratioMain);
             },
 
             drawGraph(yCoord ,ctx,color,step){
@@ -866,34 +933,7 @@
                 ctx.stroke();
 
             },
-            setPreviewCoord(){
 
-                let ratioPreview  = this.getPreviewRatio(); //Достаточно обновлять только при инициалиции и переключении графиков
-
-                this.previewCoord=[];
-                let yCoord = [];
-                for(let i = 1; i < this.columns.length;i++ ) {
-                    let yArray  = this.columns[i];
-
-                    if(this.activGraph.indexOf(yArray[0])=== -1){
-                        continue;
-                    }
-                    for(let j = 1 ; j < yArray.length; j++ ) {
-                        yCoord.push(-yArray[j]/ratioPreview);           //Переводим в отрицательную плоскость canvas
-                    }
-
-                    this.previewCoord.push(yCoord);
-                    yCoord = [];
-                }
-            },
-            drawPreviewGraphs(ctxPreview){
-             //   console.log('я рисую превью графики');
-                for(let i = 0; i < this.previewCoord.length;i++ ) {
-                    let tempArray =  this.previewCoord[i];
-                    let color =   this.colors[this.activGraph[i]];
-                    this.drawGraph(tempArray,ctxPreview,color,this.xStep);
-                }
-            },
 
             drawMainGraphs(ctxMain){
 
@@ -951,20 +991,27 @@
                 ctxMain.clearRect(0, -this.mainHeight-(this.mainShift/2), this.prevWidth, this.mainCanvasHeight);
 
                 // Сначала заполнаем массив данных от start До end
-                this.setCurrentMainData();
-
+                this.mainCurrentData  =  this.getCurrentMainData();
                 // Вычисляем шаги и отношения
-                this.setMainRatio();
-                // Метрики главного графика
+                this.getDataForBoard();
+                let sum  = this.getSumData(this.mainCurrentData,0);
 
+                this.ratioMain =   this.getRatio(this.mainHeight,sum);
+                //Коробка предпросмотра
+                this.mainCoord = this.getCoord(this.ratioMain,this.mainCurrentData,0);
+               console.log(' this.mainCoord', this.mainCoord);
+                // Сначала заполнаем массив данных от start До end
 
 
                 //Коробка предпросмотра
-                this.drawBox(ctxPreview);
+
+
                 ctxPreview.lineWidth =2;  // восстановили значение
 
-                this.drawPreviewGraphs(ctxPreview);
-                this.drawMainGraphs(ctxMain);
+                this.drawGraphs(ctxPreview,this.previewCoord,this.xStep);
+                this.drawGraphs(ctxMain,this.mainCoord,this.step);
+
+                this.drawBox(ctxPreview);
                 this.drawMetrics(ctxMain);
                 // Все графики
                 // Затенение оставшейся части предпросмотра
@@ -1001,6 +1048,15 @@
                 ctxMain.stroke();
 
             },
+            basePercentData(){
+
+                let sum  = this.getSumData(this.columns,1);
+                this.ratioPrev =   this.getRatio(this.prevHeight,sum);
+                this.previewCoord = this.getCoord(this.ratioPrev,this.columns,1);
+
+                console.log('this.previewCoord',this.previewCoord);
+                this.draw();
+            },
             init(){
 
                 let canvasPreview = this.$refs.preview;
@@ -1014,9 +1070,6 @@
                 this.colors = this.chart.colors;
                 this.names = this.chart.names;
                 this.types = this.chart.types;
-                if(this.chart.y_scaled){
-                    console.log("y_scaled")
-                }
 
                 //Воостанавливаем чистые настройки контекстов
                 this.ctxPreview.restore();
@@ -1030,12 +1083,12 @@
                 let chiftM = this.mainHeight+(this.mainShift/2);
                 let chiftP = this.prevHeight+(this.prevShift/2);
 
-                console.log('this.mainHeight',this.mainHeight);
-                console.log('this.prevHeight',this.prevHeight);
-                console.log('this.mainCanvasHeight',this.mainCanvasHeight);
-                console.log('this.prevCanvasHeight',this.prevCanvasHeight);
-                console.log('chiftM',chiftM);
-                console.log('chiftP',chiftP);
+                // console.log('this.mainHeight',this.mainHeight);
+                // console.log('this.prevHeight',this.prevHeight);
+                // console.log('this.mainCanvasHeight',this.mainCanvasHeight);
+                // console.log('this.prevCanvasHeight',this.prevCanvasHeight);
+                // console.log('chiftM',chiftM);
+                // console.log('chiftP',chiftP);
 
                 //переводим сисмему координат на низ холста
                 this.ctxPreview.translate(0,chiftP); //сдвиг по высоте
@@ -1045,8 +1098,6 @@
                 // this.boxXcoord =  800;
                 // this.boxWidth = 280;
 
-
-                this.activGraph = Object.keys(this.colors);
              //   console.log(' this.activGraph', this.activGraph);
                 // инициализируем смещение от левого края холста
                 let coords    = this.getCoords(canvasPreview);
@@ -1064,10 +1115,7 @@
                 // Заполняем массив превью коорд
                 // что бы потом его не персчитывать при перерисовке
                 // а только при смене графиков
-                this.setPreviewCoord();
-
-
-                this.draw();
+                this.basePercentData();
 
             }
         },
@@ -1102,6 +1150,7 @@
             loadJSON(function(response) {
                 // Parse JSON string into object
                 self.chart = JSON.parse(response);
+                self.activGraph = Object.keys(self.chart.colors);
                 self.init();
                 console.log('self.chart',self.chart);
             });
