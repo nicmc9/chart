@@ -533,7 +533,7 @@
 
                  // Ширина доски  возьмем ширину текстовой строки и добавим 20%
                  let widthBoard = widthTextString+widthTextString*0.4;
-                 let heightBoard = textSize*(count+2);
+                 let heightBoard = textSize*(count+4);
                  let xBoard = self.mouseX - widthBoard/2;  // устанавлием координату X доски
                  if(xBoard <=0){
                      xBoard =2;
@@ -574,7 +574,10 @@
                   //  let D = {'y0': ['30%', 'Apples','37'],'y1':['25%', 'Mango','25'] };
                     ctx.fillStyle = '#000';
                     ctx.fillText(cDate, xBoard + 10, -self.mainHeight + textSize );
-                    let y = textSize*2;
+
+                    ctx.fillText(">", xBoard + widthBoard -20, -self.mainHeight + textSize );
+
+                    let y = textSize*2.5;
                     let size =0;
                     let etalon = '30%';
                     let pos = measureText(etalon);
@@ -597,7 +600,7 @@
                         let str3 = D[item][2];
                         size = measureText(str3);
                         ctx.fillText(str3,xBoard + widthBoard -size-5,-self.mainHeight+y);
-                        y += textSize;
+                        y += textSize*1.2;
                   }
                 }
              this.timeId = requestAnimationFrame(this.drawInfoBoard);
