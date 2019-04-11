@@ -74,7 +74,7 @@
     export default {
         props: ['isNight','mainHeight','prevWidth','prevHeight','prevShift',
             'mainShift','mainCanvasHeight','prevCanvasHeight','boxStop','countLine','path','nameChart',
-            "previewCoord"
+            "previewCoord","step","mainCoord"
         ],
         data: function () {
             return {
@@ -138,13 +138,14 @@
 
             },
             previewCoord:function () {
-                  this.drawPreviewCanvas();
+                  this.drawAll();
             },
 
             prevWidth:function () {
                 let self =this;
                 this.$nextTick(function () {
                     self.init();
+                    self.drawAll();
                 });
 
                 console.log('watch',this.prevWidth);
@@ -206,8 +207,10 @@
                     this.activGraph.splice(index,1);
                 }
                 if(this.activGraph.length){
-                    this.basePercentData();
-                    console.log('this.activGraph',this.activGraph);
+                    this.$emit('set-active-graph',this.activGraph);
+
+                    this.$emit('base-percent-data',this.columns);
+
 
                 }else{
                     this.defaultDraw();
@@ -232,34 +235,29 @@
                 }
             },
             downData(mouseX){
-
                 if(!this.activGraph.length) return;
 
-                let self = this;
-                //  console.log('this.mouseX',this.mouseX);
                 if(this.isIntoLeftSide(mouseX)){
                     this.selectedLeftSide = true;
                     //  console.log('Попал в левую рамку');
 
-                    self.timeId =  setInterval(function() {
-                        self.drawPreviewCanvas();
-                    }, 50);
+                    this.timeId =  setInterval( ()=>
+                        this.drawAll()
+                    , 50);
 
                 }else if(this.isIntoRightSide(mouseX)){
 
                     this.selectedRightSide = true;
                     //   console.log('Попал в правую рамку');
-
-                    self.timeId =  setInterval(function() {
-                        self.drawPreviewCanvas();
-                    }, 50);
-
+                    this.timeId =  setInterval(()=>
+                            this.drawAll()
+                    , 50);
                 }else if(this.isIntoSlider(mouseX)){
                     this.selectedBox = true;
 
-                    self.timeId =  setInterval(function() {
-                        self.drawPreviewCanvas();
-                    }, 50);
+                    this.timeId =  setInterval(()=>
+                            this.drawAll()
+                    , 50);
 
                 }
 
@@ -576,24 +574,14 @@
                 let ctxMain =this.ctxMain;
                 ctxMain.clearRect(0, -this.mainHeight-(this.mainShift/2), this.prevWidth, this.mainCanvasHeight);
             // Сначала заполнаем массив данных от start До end
-                this.mainCurrentData  =  this.getCurrentMainData();
-                // Вычисляем шаги и отношения
-                this.getDataForBoard();
-                let sum  = this.getSumData(this.mainCurrentData,0);
-                this.ratioMain =   this.getRatio(this.mainHeight,sum);
-                //Коробка предпросмотра
-                this.mainCoord = this.getCoord(this.ratioMain,this.mainCurrentData,0);
-                console.log(' this.mainCoord', this.mainCoord);
-                // Сначала заполнаем массив данных от start До end
-                //Коробка предпросмотра
 
-                this.drawGraphs(ctxMain,this.mainCoord,this.step);
-
+               this.drawGraphs(ctxMain,this.mainCoord,this.step);
 
                 if(this.infoboard){
                     ctxMain.fillStyle = this.timeColor.fillPreview;
                     ctxMain.fillRect(0,-this.mainHeight,this.prevWidth, this.mainHeight);
                 }
+
 
                 this.drawMetrics(ctxMain);
                 this.drawMainDateRange(ctxMain);
@@ -612,6 +600,7 @@
                 this.drawFillBox(ctxPreview);
             },
             drawAll(){
+                this.$emit('set-main-data',this.columns,this.start,this.end);
                this.drawMainCanvas();
                this.drawPreviewCanvas();
 
@@ -670,7 +659,9 @@
 
                 this.setDateArray();
 
+              //  this.$emit('set-main-data',this.columns,this.start,this.end);
                 this.$emit('base-percent-data',this.columns);
+                this.drawAll();
 
             },
             getCanvasCoords(elem) {
@@ -752,6 +743,7 @@
                 self.chart = JSON.parse(response);
                 console.log('self.chart',self.chart);
                 self.activGraph = Object.keys(self.chart.colors);
+                self.$emit('set-active-graph',self.activGraph );
                 self.init();
 
             };

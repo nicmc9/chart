@@ -17,7 +17,13 @@
 
 
                   :previewCoord="previewCoord"
+                  :mainCoord = "mainCoord"
+                  :step = step
+
+
                   v-on:base-percent-data="basePercentData"
+                  v-on:set-main-data="setCurrentMainData"
+                  v-on:set-active-graph="setActiveGraph"
 
           ></base-graph>
 
@@ -40,8 +46,7 @@
                 previewCoord: [],    //   [ [122, 'y0'] ,[123,'y1']]
                 // максимальное значение данных в columns для y координат
                 //превратить в актив
-
-                mainCurrentData:[],  // массив значений из columns находящейся между start and end т.е. данные непосредственно сейчас отображаемые
+                arrayForMainCoords:[],  // массив значений из columns находящейся между start and end т.е. данные непосредственно сейчас отображаемые
                 currentData:[],  // данные из columns на которых сейчас инфоДоска
                 step:0,  // шаг для координаты х на главном холсте
                 ratioMain: 1,   // отношение к системе координат холста и значений данных из colimns
@@ -49,7 +54,9 @@
                 infoboard:false,
                 mainCoord:[],
                 dataForBoard:[],
-                currentCoord:[]  // Для полоски инфоборда
+                currentCoord:[],  // Для полоски инфоборда
+                activeGraph:[]
+
             }
         },
 
@@ -151,13 +158,13 @@
                 tempArray = yArray.slice(this.start,this.end);
                 this.dataForBoard.push(tempArray);
 
-                for (let i =0; i<this.mainCurrentData.length;i++){
-                    tempArray = this.mainCurrentData[i];
+                for (let i =0; i<this.arrayForMainCoords.length;i++){
+                    tempArray = this.arrayForMainCoords[i];
                     this.dataForBoard.push(tempArray);
                 }
 
                 console.log(' this.dataForBoard', this.dataForBoard);
-             //   console.log(' this.main', this.mainCurrentData);
+             //   console.log('arrayForMainCoords', this.arrayForMainCoords);
 
             },
             drawInfoBoard(){
@@ -295,16 +302,22 @@
 
 /////////////////////////  draw() /////////////////////////////////////////
 
-            getSumData(data,init){
+            getSumData(data){
 
                 let sum = 0;
                 let sumData =[];
+
                 // Идем по длинне всех данных за длинну  взяли массив времени
                 let len = data[0].length;
 
-                for(let i = init; i < len;i++ ) {
+                let i = 1;
+                let type =data[1][0];
+                typeof type == "string"?i = 1:i = 0;
 
-                    for(let j = init ; j < data.length; j++ ) {
+                console.log('i',i);
+                for(i ; i < len;i++ ) {
+
+                    for(let j = 1; j < data.length; j++ ) {
                         let yArray  = data[j];
                         sum += yArray[i];
                     }
@@ -334,17 +347,17 @@
                 let coord =[];
                 let yCoord = [];
 
-                for(let i = init; i < data.length;i++ ) {
+            for(let i = 1; i < data.length;i++ ) {
                     let yArray  = data[i];
                     // console.log('yArray ',yArray );
                     // if(this.activGraph.indexOf(yArray[0])=== -1){
                     //     continue;
                     // }
-                    for(let j = init ; j < yArray.length; j++ ) {
+                    for(let j =init ; j < yArray.length; j++ ) {
                         let cor = -yArray[j]/ratio;
 
-                        if(i>=(init+1)){
-                            let early =  coord[i-(init+1)][j-init];
+                        if(i>=2){
+                            let early =  coord[i-2][j-init];
                             yCoord.push(cor + early);
                         }else{
                             yCoord.push(cor);           //Переводим в отрицательную плоскость canvas
@@ -358,37 +371,52 @@
                 return coord;
             },
 
-            getCurrentMainData(){
 
+            getArrayForMainCoords(columns,start,end){
                 let tempArray =[];
                 let data =[];
                 let yArray =[];
 
-                for(let i = 1; i < this.columns.length;i++ ) {
-                    yArray  = this.columns[i];
-                    if(this.activGraph.indexOf(yArray[0]) === -1){
-                        continue;
-                    }
-                    tempArray = yArray.slice(this.start,this.end);
+                for(let i = 0; i < columns.length;i++ ) {
+                    yArray  = columns[i];
+                    tempArray = yArray.slice(start,end);
                     data.push(tempArray);
                 }
                 console.log('data',data);
-
                 this.step =    this.prevWidth/(tempArray.length-1);
-
                 return data;
 
             },
 
-            basePercentData(columns){
+            setCurrentMainData(columns,start,end) {
+
+                console.log(' setCurrentMainData') ;
+                this.arrayForMainCoords  =  this.getArrayForMainCoords(columns,start,end);
+                // Вычисляем шаги и отношения
+                //this.getDataForBoard();
+                let sum  = this.getSumData(this.arrayForMainCoords);
+                this.ratioMain =   this.getRatio(this.mainHeight,sum);
+                //Коробка предпросмотра
+                this.mainCoord = this.getCoord(this.ratioMain,this.arrayForMainCoords,0);
+                console.log(' this.mainCoord', this.mainCoord);
+                // Сначала заполнаем массив данных от start До end
+                //Коробка предпросмотра
+
+            },
+            setActiveGraph(newGraph){
+                this.activGraph = newGraph;
+                console.log('this.activGraph',this.activGraph);
+            },
+
+            basePercentData(columns,start,end){
 
                 console.log('Вызвали наконец');
-                let sum  = this.getSumData(columns,1);
+                let sum  = this.getSumData(columns);
                 let ratioPrev =   this.getRatio(this.prevHeight,sum);
                 this.previewCoord = this.getCoord(ratioPrev,columns,1);
                 console.log('this.previewCoord',this.previewCoord);
 
-              // this.$emit('draw');
+
              },
 
         },
