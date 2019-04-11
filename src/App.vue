@@ -41,28 +41,10 @@
 <!--                :boxStop = boxStop-->
 <!--                :countLine = countLine-->
 <!--        ></line-chart>-->
-      <li>
-        <stacked-bar-chart
-                nameChart ="Bar Chart"
-                path = "contest/3"
-                :isNight =  isNight
-                :mainHeight  = mainHeight
-                :prevWidth  = prevWidth
-                :prevHeight  = prevHeight
-                :prevShift  = prevShift
-                :mainShift  = mainShift
-                :mainCanvasHeight  = mainCanvasHeight
-                :prevCanvasHeight = prevCanvasHeight
-                :boxStop = boxStop
-                :countLine = countLine
-        ></stacked-bar-chart>
-
-      </li>
-
 <!--      <li>-->
-<!--        <bar-chart-->
+<!--        <stacked-bar-chart-->
 <!--                nameChart ="Bar Chart"-->
-<!--                path = "contest/4"-->
+<!--                path = "contest/3"-->
 <!--                :isNight =  isNight-->
 <!--                :mainHeight  = mainHeight-->
 <!--                :prevWidth  = prevWidth-->
@@ -73,9 +55,27 @@
 <!--                :prevCanvasHeight = prevCanvasHeight-->
 <!--                :boxStop = boxStop-->
 <!--                :countLine = countLine-->
-<!--        ></bar-chart>-->
+<!--        ></stacked-bar-chart>-->
 
 <!--      </li>-->
+
+      <li>
+        <bar-chart
+                nameChart ="Bar Chart"
+                path = "contest/4"
+                :isNight =  isNight
+                :mainHeight  = mainHeight
+                :prevWidth  = prevWidth
+                :prevHeight  = prevHeight
+                :prevShift  = prevShift
+                :mainShift  = mainShift
+                :mainCanvasHeight  = mainCanvasHeight
+                :prevCanvasHeight = prevCanvasHeight
+                :boxStop = boxStop
+                :countLine = countLine
+        ></bar-chart>
+
+      </li>
 <!--      <li>-->
 <!--        <percent-chart-->
 <!--                nameChart ="Percentage stacked area chart "-->
