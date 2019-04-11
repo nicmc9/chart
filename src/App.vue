@@ -2,8 +2,8 @@
   <div id="app" >
 
     <div class="night-mode">
-    <p v-if="isNight"   @click="isNight=!isNight">Switch to Day Mode </p>
-    <p v-else    @click="isNight=!isNight">Switch to Night Mode </p>
+    <p v-if="isNight"   @click="switchDayMode()">Switch to Day Mode </p>
+    <p v-else    @click="switchDayMode()">Switch to Night Mode </p>
     </div>
 
 
@@ -41,28 +41,9 @@
 <!--                :boxStop = boxStop-->
 <!--                :countLine = countLine-->
 <!--        ></line-chart>-->
-<!--      <li>-->
-<!--        <stacked-bar-chart-->
-<!--                nameChart ="Bar Chart"-->
-<!--                path = "contest/3"-->
-<!--                :isNight =  isNight-->
-<!--                :mainHeight  = mainHeight-->
-<!--                :prevWidth  = prevWidth-->
-<!--                :prevHeight  = prevHeight-->
-<!--                :prevShift  = prevShift-->
-<!--                :mainShift  = mainShift-->
-<!--                :mainCanvasHeight  = mainCanvasHeight-->
-<!--                :prevCanvasHeight = prevCanvasHeight-->
-<!--                :boxStop = boxStop-->
-<!--                :countLine = countLine-->
-<!--        ></stacked-bar-chart>-->
-
-<!--      </li>-->
-
       <li>
-        <bar-chart
-                nameChart ="Bar Chart"
-                path = "contest/4"
+        <stacked-bar-chart
+
                 :isNight =  isNight
                 :mainHeight  = mainHeight
                 :prevWidth  = prevWidth
@@ -73,13 +54,29 @@
                 :prevCanvasHeight = prevCanvasHeight
                 :boxStop = boxStop
                 :countLine = countLine
-        ></bar-chart>
+        ></stacked-bar-chart>
 
       </li>
+
+<!--      <li>-->
+<!--        <bar-chart-->
+<!--                nameChart ="Bar Chart"-->
+<!--                path = "contest/4"-->
+<!--                :isNight =  isNight-->
+<!--                :mainHeight  = mainHeight-->
+<!--                :prevWidth  = prevWidth-->
+<!--                :prevHeight  = prevHeight-->
+<!--                :prevShift  = prevShift-->
+<!--                :mainShift  = mainShift-->
+<!--                :mainCanvasHeight  = mainCanvasHeight-->
+<!--                :prevCanvasHeight = prevCanvasHeight-->
+<!--                :boxStop = boxStop-->
+<!--                :countLine = countLine-->
+<!--        ></bar-chart>-->
+
+<!--      </li>-->
 <!--      <li>-->
 <!--        <percent-chart-->
-<!--                nameChart ="Percentage stacked area chart "-->
-<!--                path = "contest/5"-->
 <!--                :isNight =  isNight-->
 <!--                :mainHeight  = mainHeight-->
 <!--                :prevWidth  = prevWidth-->
@@ -104,6 +101,7 @@ import LineChart from './components/LineChart.vue'
 import BarChart from './components/BarChart.vue'
 import StackedBarChart from './components/StackedBarChart.vue'
 import PercentChart from './components/PercentChart.vue'
+import BaseGraph from './components/BaseGraph.vue'
 
 export default {
   data: function () {
@@ -145,6 +143,15 @@ export default {
 
   },
   methods: {
+      switchDayMode(){
+        this.isNight = !this.isNight;
+
+          if(this.isNight){
+               document.body.style.backgroundColor = "#293647";
+          }else{
+              document.body.style.backgroundColor = "white";
+          }
+      },
     onResize() {
       this.hWindow = document.documentElement.clientHeight;
       this.prevWidth= Math.round(document.documentElement.clientWidth  * 0.9);
@@ -169,6 +176,7 @@ export default {
   },
   name: 'app',
   components: {
+    BaseGraph,
     LineChart,
     BarChart,
     StackedBarChart,

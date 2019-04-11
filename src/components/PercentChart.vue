@@ -1,65 +1,23 @@
 <template>
 
     <div>
-<!--        <p>touchBoard -&#45;&#45; {{touchBoard}}  this.timeId -&#45;&#45;{{this.timeId}} </p>-->
 
-        <div class="stage"  :style="{width:prevWidth+'px',height:mainCanvasHeight+'px'}">
+        <base-graph
+                nameChart ="Percentage stacked area chart "
+                path = "/contest/5/"
+                :prevWidth = prevWidth
+                :mainCanvasHeight = mainCanvasHeight
+                :prevCanvasHeight = prevCanvasHeight
+                :isNight =  isNight
+                :mainHeight  = mainHeight
+                :prevHeight  = prevHeight
+                :prevShift  = prevShift
+                :mainShift  = mainShift
+                :boxStop = boxStop
+                :countLine = countLine
 
-            <canvas ref="board" :width = "prevWidth" :height="mainCanvasHeight"
-
-                   @touchstart="mainEnter"
-                   @touchmove="mainMove('touch',$event)"
-                   @touchend="mainUp"
-                   @touchcancel="mainUp"
-
-
-                   @mouseenter="mainEnter"
-                   @mousedown="mainEnter"
-                   @mousemove="mainMove('mouse',$event)"
-                   @mouseleave="mainUp"
-                   @mouseup="mainUp"
-
-            ></canvas>
-
-            <canvas  ref="main" :width = "prevWidth" :height="mainCanvasHeight"
-
-            ></canvas>
-
-        </div>
-
-    <div class="stage2" :style="{width:prevWidth+'px',height:prevCanvasHeight+'px'}">
-        <canvas    ref="preview" :width = "prevWidth" :height="prevCanvasHeight"
-                @mousedown="previewDown('mouse',$event)"
-                @mousemove="previewMove('mouse',$event)"
-                @mouseleave="previewUp"
-                @mouseup="previewUp"
-
-                @touchstart="previewDown('touch',$event)"
-                @touchmove="previewMove('touch',$event)"
-                @touchend="previewUp"
-        ></canvas>
-    </div>
-        <br>
-<!--        <p>touchBoard -&#45;&#45; {{touchBoard}}  this.timeId -&#45;&#45;{{this.timeId}} </p>-->
-
-        <ul class="checkbox">
-
-
-            <li class="checkbox__li" v-for ="(val,key) in names">
-                <label >
-                    <input class="checkbox__input" type="checkbox"  :value="key" @change="updateGraph(key)">
-                    <span class="checkbox__button" :style="{'border-color': colors[key] }"></span>
-                    <i class="checkbox__i" >&#10004;</i>
-                    <span class="checkbox__text"
-                          :style="isNight?{color: 'white','border-color':'#40566b'}:''">{{val}}</span></label>
-
-            </li>
-            <li  class="checkbox__li">
-                <button  :href="file" class="save"  download="chart" @click="save">Save chart</button>
-            </li>
-
-        </ul>
-        <br>
+                v-on:base-percent-data="basePercentData"
+        ></base-graph>
 
     </div>
 
@@ -74,24 +32,10 @@
                'countLine','path','nameChart'],
         data: function () {
             return {
-                chart:null,
-                ctxPreview: 0, // Контекст предпросмотра
-                ctxMain: 0,    //  Главный график
-                ctxBoard: 0,     //Информатор
-                //Данные json
-                colors:{},   //Хранит цвета в виде {y0:#fff}
-                names: {},   //Хранит имена в виде {y0:#0}
-                types:{},    //Хранит типы в виде {y0:'line'}
-                columns: {}, //Хранит хначения в виде  { "columns": [   ['x','1099090'],['y0','32'],['y1','342'] ] }
-              // Хранение координат предпросмотра для переиспользования
+
                 previewCoord: [],    //   [ [122, 'y0'] ,[123,'y1']]
                 // максимальное значение данных в columns для y координат
                 maxValue: 1,
-                boxXcoord: 0,  // начальная координата х коробки
-                boxWidth: 100,    //начальная ширина коробки
-                //превратить в актив
-                activGraph: [],   // массив содержащий неактивные графики в виде ['y0','y1']
-                xOffset: 0,   // смешение от края экрана можно удалить и использовать layerX вместо pageX в будущем
                 selectedBox: false, // флаг выбора самой коробки
                 selectedLeftSide: false, // флаг выбора левого столбца коробки
                 selectedRightSide: false, // флаг выбора правого столбца коробки
@@ -103,9 +47,6 @@
                 step:0,  // шаг для координаты х на главном холсте
                 ratioMain: 1,   // отношение к системе координат холста и значений данных из colimns
                 // набор цветов по умолчанию дневного режима можно переопределить на все графики
-                timeColor: this.$options.dayColor,
-                datesArr:[],
-                file:'',
                 percentData:[],
                 mainCoord:[],
                 dataForBoard:[],
@@ -115,52 +56,7 @@
             }
         },
 
-        dayColor:{
-            fillPreview:"rgba(245,249,251,0.5)",
-            box:"rgba(168,180,189,0.5)",
-            metrics:"rgb(67,73,79)",
-            gLine:"rgba(221,234,243,0.5)",
-            textInfo: "#000",
-            board: "#fff",
-            test: "#C0D1E1",
-        },
 
-        nightColor:{
-            fillPreview:"rgba(31,42,56,0.5)",
-            box:"rgba(61,89,119,0.5)",
-            metrics:"rgb(158,204,249)",
-            gLine:"rgba(64,86,107,0.2)",
-            textInfo: "#fff",
-            board: "#2b384a",
-        },
-
-        watch: {
-             isNight:function () {
-                if(this.isNight){
-                    this.timeColor = this.$options.nightColor;
-                    document.body.style.backgroundColor = "#293647";
-                }else{
-                    document.body.style.backgroundColor = "white";
-                    this.timeColor = this.$options.dayColor;
-                }
-
-                if(this.activGraph.length)  {
-                    this.draw();
-                }else{
-                    this.defaultDraw();
-                }
-
-            },
-            prevWidth:function () {
-                let self =this;
-                this.$nextTick(function () {
-                    self.init();
-                });
-
-                console.log('watch',this.prevWidth);
-            }
-
-        },
         computed: {
             // геттер вычисляемого значения
             // чтобы уложиться на горизонтальной линии
@@ -185,37 +81,6 @@
 
 
         methods: {
-
-            ///////////////  Active Graphics/////////////////
-            save(){
-                let canvasMain = this.$refs.main;
-                this.file = canvasMain.toDataURL('image/png');
-            },
-
-            updateGraph(key){
-                console.log('key',key);
-                let index =  this.activGraph.indexOf(key);
-                if(index === -1){
-                    this.activGraph.push(key);
-                    this.activGraph.sort();
-
-                }else{
-                    this.activGraph.splice(index,1);
-                }
-                if(this.activGraph.length){
-                    this.basePercentData();
-                  console.log('this.activGraph',this.activGraph);
-
-                }else{
-                    this.defaultDraw();
-                }
-
-
-                // console.log(' this.activGraph', this.activGraph);
-            },
-
-
-            ///////////////////////Night - Day///////////////////////////////
 
 
             /// методы событий изменяющие данные
@@ -630,13 +495,6 @@
 
             ///////////////////////////////////////////
 
-            getCoords(elem) {
-                let box = elem.getBoundingClientRect();
-                return {
-                    top: box.top + pageYOffset,
-                    left: box.left + pageXOffset
-                };
-            },
 
 /////////////////////////  draw() /////////////////////////////////////////
 
@@ -738,27 +596,6 @@
                 this.drawYmeter(ctx);
             },
 
-            setDateArray(){
-
-                let  options = {
-                    month: 'short',
-                    day: 'numeric',
-                };
-                let time = this.columns[0];
-                this.datesArr=[];
-
-
-                for (let i = 0; i < time.length; i++) {
-                    if(i%6===0) {
-                        this.datesArr.push(new Date(time[i]).toLocaleString("en-US", options));
-                    }else{
-                        this.datesArr.push("");
-                    }
-                }
-                this.datesArr[1] = new Date(time[1]).toLocaleString("en-US", options);
-                this.datesArr[this.datesArr.length-1] =  (new Date(time[time.length-1]).toLocaleString("en-US", options));
-                //    console.log('this.datesArr0',this.datesArr);
-            },
 
 
             drawDate(ctx){
@@ -967,10 +804,13 @@
 
                 this.drawGraphs(ctxPreview,this.previewCoord,this.xStep);
                 this.drawGraphs(ctxMain,this.mainCurrentData,this.step);
+
+
                 this.drawBox(ctxPreview);
                 this.drawMetrics(ctxMain);
                 // Все графики
                 // Затенение оставшейся части предпросмотра
+
                 this.drawFillBox(ctxPreview);
 
                 this.drawMainDateRange(ctxMain);
@@ -1005,114 +845,29 @@
 
             },
             basePercentData(){
+                console.log('Вызвали наконец');
+
                 this.setPercentData();
 
                 let percent = this.prevHeight*0.01;
+
                 this.previewCoord = this.getCoord(percent,this.prevHeight);
+
                 percent = this.mainHeight*0.01;
+
                 this.mainCoord = this.getCoord(percent,this.mainHeight);
 
                 console.log('this.previewCoord',this.previewCoord);
                 console.log('this.mainCoord',this.mainCoord);
 
-                this.draw();
+                this.$emit('draw');
+
             },
-            init(){
-                let canvasPreview = this.$refs.preview;
-                this.ctxPreview = canvasPreview.getContext('2d');
-                let canvasMain = this.$refs.main;
-                this.ctxMain = canvasMain.getContext('2d');
-                let canvasBoard = this.$refs.board;
-                this.ctxBoard = canvasBoard.getContext('2d');
-
-                this.columns =  this.chart.columns;
-                this.colors = this.chart.colors;
-                this.names = this.chart.names;
-                this.types = this.chart.types;
-
-                //Воостанавливаем чистые настройки контекстов
-                this.ctxPreview.restore();
-                this.ctxMain.restore();
-                this.ctxBoard.restore();
-                // а затем сохраняем чистые
-                this.ctxPreview.save();
-                this.ctxMain.save();
-                this.ctxBoard.save();
-
-                let chiftM = this.mainHeight+(this.mainShift/2);
-                let chiftP = this.prevHeight+(this.prevShift/2);
-
-                // console.log('this.mainHeight',this.mainHeight);
-                // console.log('this.prevHeight',this.prevHeight);
-                // console.log('this.mainCanvasHeight',this.mainCanvasHeight);
-                // console.log('this.prevCanvasHeight',this.prevCanvasHeight);
-                // console.log('chiftM',chiftM);
-                // console.log('chiftP',chiftP);
-
-                //переводим сисмему координат на низ холста
-                this.ctxPreview.translate(0,chiftP); //сдвиг по высоте
-                this.ctxMain.translate(0,chiftM);   // На графике ниже нулевой линии положительная плоскость Y холста
-                this.ctxBoard.translate(0,chiftM);
-
-             //   console.log(' this.activGraph', this.activGraph);
-                // инициализируем смещение от левого края холста
-                let coords    = this.getCoords(canvasPreview);
-                this.xOffset = coords.left;
-                // console.log('this.xOffset',this.xOffset);
-
-                // Ставим линии пошире и рисуем
-                this.ctxMain.lineWidth = 2;
-                this.ctxPreview.lineWidth = 2;
-
-                this.boxXcoord=0;
-                this.boxWidth=this.prevWidth*0.3;
-
-
-                this.setDateArray();
-                // Заполняем массив превью коорд
-                // что бы потом его не персчитывать при перерисовке
-                // а только при смене графиков
-
-                 this.basePercentData();
-            }
 
         },
 
         mounted(){
-
-            let self =this;
-            console.log('self.path',self.path);
-            let path = self.path+'/overview.json';
-            function loadJSON(callback) {
-                var xobj = new XMLHttpRequest();
-                xobj.overrideMimeType("application/json");
-                xobj.open('GET', path, true);
-                xobj.onreadystatechange = function () {
-                    if (xobj.readyState == 4 && xobj.status == "200") {
-                        callback(xobj.responseText);
-                    }
-                };
-                xobj.send(null);
-            }
-
-            // fetch('contest/1/overview.json')
-            //         .then(response => response.json() )
-            //         .then(data=>  self.chart = data )
-            //         .catch( alert );
-
-
-
-            loadJSON(function(response) {
-                // Parse JSON string into object
-                self.chart = JSON.parse(response);
-                self.activGraph = Object.keys(self.chart.colors);
-                self.init();
-
-                console.log('self.chart',self.chart);
-            });
-
-
-            console.log('mounted');
+            console.log(' PercentChart mounted');
         },
 
         name: "PercentChart",
@@ -1122,79 +877,5 @@
 </script>
 
 <style scoped>
-    .checkbox{
-        list-style: none;
-        margin: auto;
-    }
-    .checkbox__li{
-        display: inline-block;
-        position: relative;
-        margin-left: 1rem;
-    }
 
-    .checkbox__input {
-        display: none;
-    }
-    .checkbox__text {
-        display: inline-block;
-        position: relative;
-        padding: 0.8rem 0.8rem 0.8rem 3rem;
-        border-radius: 2rem;
-        border: 1px solid lightgray;
-    }
-
-    .checkbox__button {
-        position: absolute;
-        top: 0.6rem;
-        left: 0.6rem;
-        width: 0.1rem;
-        height: 0.1rem;
-        border: 0.8rem solid black;
-        border-radius: 1rem;
-        box-shadow: 0 2px 5px rgba(0,0,0,.3);
-        transition: .3s;
-    }
-    .checkbox__i {
-        position: absolute;
-        font-size: 1.1rem;
-        color: white;
-        top: 0.7rem;
-        left: 0.8rem;
-
-    }
-    .checkbox__input:checked  ~ .checkbox__button{
-        top: 0.6rem;
-        left: 0.6rem;
-        width: 1.5rem;
-        height: 1.5rem;
-        border: 2px solid #000000;
-    }
-    /*Для ночного режима*/
-    .checkbox__input:checked  ~ .checkbox__i{
-        font-size: 0;
-    }
-
-    .save{
-        text-align: center;
-        color: #36a8f1 ;
-        font: bold italic 1.2rem sans-serif;
-        cursor: pointer;
-        margin-left: 2%;
-        background-color: white;
-        border: 1px  solid lightgray;
-        border-radius: 19px;
-        padding: 0.6rem;
-    }
-
-    .stage, .stage2{
-        margin: auto;
-        position: relative;
-    }
-
-    .stage canvas { position: absolute; }
-    .stage :first-child  { z-index: 2; }
-    /*canvas{*/
-    /*    border: 1px solid black;*/
-
-    /*}*/
 </style>
