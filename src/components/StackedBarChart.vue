@@ -76,9 +76,6 @@
                 cancelAnimationFrame(this.timeId);
                 this.ctxBoard.clearRect(0, -this.mainHeight-(this.mainShift/2), this.prevWidth, this.mainCanvasHeight);
                 this.draw();
-
-
-
             },
 
             mainMove(type,event){
@@ -383,177 +380,12 @@
 
             },
 
-
-
-
-
-
-
-            drawMetrics(ctx){
-
-                //Шрифт и цвет для обоих метрик
-
-                ctx.fillStyle = this.timeColor.metrics;
-
-                ctx.strokeStyle = this.timeColor.gLine;
-                let fontSize = Math.round(this.mainHeight*0.03);
-                if(fontSize>20 ) fontSize =20;
-                if(fontSize<10 ) fontSize =10;
-                ctx.font = fontSize+"px sans-serif";
-
-                this.drawDate(ctx);
-                this.drawYmeter(ctx);
-            },
-
-
-
-
-            drawDate(ctx){
-                let self =this;
-                let date = this.datesArr.slice(this.start,this.end);
-                let step = this.step;
-
-                let  actualDate=[];
-                console.log('e',this.e);
-                console.log('date',date);
-
-                for(let i = 0;i < date.length; i++)
-                {
-                    if(date[i]) {   actualDate.push(date[i]);
-                    }
-                }
-
-                if(actualDate.length > 6){
-                    check();
-
-                    drawText();
-                }else{
-                    drawText();
-                }
-
-
-                function check() {
-
-                    for (let j = actualDate.length; j >= 0; j -= 2) {
-                        actualDate.splice(j, 1);
-                    }
-                    if (actualDate.length > 6) {
-                        check();
-
-                    }
-                }
-
-                function drawText() {
-
-                    ctx.beginPath();
-                    let  x =0;
-
-                    for(let i = 0;i < date.length; i++)
-                    {
-                        if(date[i]){
-                            if(actualDate.indexOf(date[i])!==-1) {
-
-                                let xl = x-20;
-                                if(xl<0) xl=0;
-                                if(xl>self.prevWidth-50) xl = self.prevWidth-50;
-                                ctx.fillText(date[i],xl, 20);
-                            }
-                        }
-                        x+=step;
-                    }
-                    ctx.stroke();
-                }
-            },
-
-
-
-
-            drawMainGraphs(ctxMain){
-
-                let yCoord = [];
-                for(let i = 1; i < this.mainCurrentData.length; i++ ) {
-                    let yArray  = this.mainCurrentData[i];
-
-                    for(let j = 0 ; j < yArray.length;j++ ) {
-                        yCoord.push(-yArray[j]/this.ratioMain);           //Переводим в отрицательную плоскость canvas
-                    }
-                    let color =   this.colors[this.activGraph[i-1]];
-                    this.drawGraph(yCoord,ctxMain,color,this.step);
-                    yCoord = [];
-                }
-
-                if(this.infoboard){
-                    ctxMain.fillStyle = this.timeColor.fillPreview;
-                    ctxMain.fillRect(0,-this.mainHeight,this.prevWidth, this.mainHeight);
-                }
-
-
-
-            },
-            drawMainDateRange(ctx){
-                let dateFirst = this.columns[0][this.start];
-                let dateEnd = this.columns[0][this.end-1];
-
-                console.log('dateEnd',this.end);
-                let  options = {
-                    day: 'numeric',
-                    month: 'long',
-                    year:'numeric',
-                };
-                dateFirst = new Date(dateFirst).toLocaleString("en-GB", options);
-                dateEnd = new Date(dateEnd).toLocaleString("en-GB", options);
-                let range = dateFirst+' - '+ dateEnd;
-                let text = ctx.measureText(range); // TextMetrics object
-                let x = this.prevWidth -text.width-20;
-
-                ctx.fillStyle ="#36a8f1";
-
-                ctx.fillText(range, x, -this.mainHeight-this.mainShift/3);
-                ctx.fillText(this.nameChart, 10, -this.mainHeight-this.mainShift/3);
-                console.log('tthis.timeColor.textInfo',this.timeColor.textInfo);
-
-            },
-
-
-            defaultDraw(){
-                let ctxMain =this.ctxMain;
-                let ctxPreview = this.ctxPreview;
-
-                //очищаем холст
-                ctxPreview.clearRect(0, -this.prevHeight-(this.prevShift/2), this.prevWidth, this.prevCanvasHeight);
-                ctxMain.clearRect(0, -this.mainHeight-(this.mainShift/2), this.prevWidth, this.mainCanvasHeight);
-
-                ctxPreview.fillStyle = this.timeColor.gLine;
-                ctxMain.fillStyle = this.timeColor.gLine;
-
-                ctxPreview.fillRect(0, -this.prevHeight-(this.prevShift/2), this.prevWidth, this.prevCanvasHeight);
-                ctxMain.fillRect(0, -this.mainHeight-(this.mainShift/2), this.prevWidth, this.mainCanvasHeight);
-
-
-                ctxMain.strokeStyle ='#000';
-                ctxMain.fillText('0', 5, -5);
-
-
-                ctxMain.beginPath();
-                for(let i =0 ; i < this.countLine+1 ; i++){
-                    ctxMain.moveTo(0,-this.shiftY*i);
-                    ctxMain.lineTo(this.prevWidth ,-this.shiftY*i);
-
-                }
-                ctxMain.stroke();
-
-            },
-
             basePercentData(columns){
+
                 console.log('Вызвали наконец');
-
                 let sum  = this.getSumData(columns,1);
-
-
                 let ratioPrev =   this.getRatio(this.prevHeight,sum);
-
                 this.previewCoord = this.getCoord(ratioPrev,columns,1);
-
                 console.log('this.previewCoord',this.previewCoord);
 
               // this.$emit('draw');
