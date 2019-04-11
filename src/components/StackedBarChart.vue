@@ -119,17 +119,18 @@
 
         dayColor:{
             fillPreview:"rgba(245,249,251,0.5)",
-            box:"rgba(221,234,243,0.5)",
-            metrics:"rgba(139,147,153)",
+            box:"rgba(168,180,189,0.5)",
+            metrics:"rgb(67,73,79)",
             gLine:"rgba(221,234,243,0.5)",
             textInfo: "#000",
             board: "#fff",
+            test: "#C0D1E1",
         },
 
         nightColor:{
             fillPreview:"rgba(31,42,56,0.5)",
-            box:"rgba(95,128,158,0.5)",
-            metrics:"rgba(95,128,158)",
+            box:"rgba(61,89,119,0.5)",
+            metrics:"rgb(158,204,249)",
             gLine:"rgba(64,86,107,0.2)",
             textInfo: "#fff",
             board: "#2b384a",
@@ -687,6 +688,7 @@
             getRatio(height,sum){
 
                 let max = Math.max.apply(null,sum);
+                this.maxValue =max;
                 let rait = max/height;
                 rait = Math.round(rait * 100) / 100;
                 console.log('rait ',rait);
@@ -921,9 +923,8 @@
                 ctx.beginPath();
                 ctx.fillText("0", 5, -5);
                 for(let i =1 ; i < this.countLine+1 ; i++){
-
-                    let z = Math.round((this.metric1YValue*i)/1000000);
-                    z = z+"M";
+                    let z = Math.round((this.metric1YValue*i)/1000);
+                    z = z+"K";
                     ctx.moveTo(0,-this.shiftY*i);
                     ctx.lineTo(this.prevWidth ,-this.shiftY*i);
                     ctx.fillText(z, 5, -this.shiftY*i-5);
