@@ -112,7 +112,8 @@
                 file:'',
                 infoboard:false,
                 mainCoord:[],
-                dataForBoard:[]
+                dataForBoard:[],
+                currentCoord:[]  // Для полоски инфоборда
             }
         },
 
@@ -395,10 +396,8 @@
                 this.touchBoard =true;
                 this.infoboard =true;
                 this.timeId = requestAnimationFrame(this.drawInfoBoard);
-                // self.timeId =  setInterval(function() {
-                //     self.drawInfoBoard();
-                // }, 50);
-             this.draw();
+
+                this.draw();
 
             },
             mainUp(){
@@ -409,7 +408,7 @@
                 cancelAnimationFrame(this.timeId);
                 this.ctxBoard.clearRect(0, -this.mainHeight-(this.mainShift/2), this.prevWidth, this.mainCanvasHeight);
                 this.draw();
-                //clearInterval(this.timeId);
+
 
 
             },
@@ -460,23 +459,20 @@
                     }
                     //  let D = {'y0': ['30%', 'Apples','37'],'y1':['25%', 'Mango','25'] };
                     let D = {};
-                    let sum = 0;
+                     let sum =0;
+                    self.currentCoord=[];
                     for(let i = 0; i <self.activGraph.length; i++) {
                         D[self.activGraph[i]] =[];
                         D[self.activGraph[i]].push(self.names[self.activGraph[i]]);
                         D[self.activGraph[i]].push(self.dataForBoard[i+1][j]);
 
                         sum += self.dataForBoard[i+1][j];
+                        self.currentCoord.push([self.activGraph[i],self.mainCoord[i][j]]);
                     }
-
-
-
                     D['All'] =['All',sum];
-
                     self.currentData = D;
-                    console.log('D',D);
-
-
+                 //   console.log('D',D);
+               //     console.log('self.currentCoord',self.currentCoord);
                 }
 
             },
@@ -490,15 +486,6 @@
                 tempArray = yArray.slice(this.start,this.end);
                 this.dataForBoard.push(tempArray);
 
-                // for(let i = 1; i < this.columns.length;i++ ) {
-                //     yArray  = this.columns[i];
-                //     if(this.activGraph.indexOf(yArray[0])=== -1){
-                //         continue;
-                //     }
-                //     tempArray = yArray.slice(this.start,this.end);
-                //     //  tempArray.unshift(yArray[0]);
-                //     this.dataForBoard.push(tempArray);
-                // }
                 for (let i =0; i<this.mainCurrentData.length;i++){
                     tempArray = this.mainCurrentData[i];
                     this.dataForBoard.push(tempArray);
@@ -553,10 +540,10 @@
                 let flag= true;
                 let xBoard = self.mouseX+2;  // устанавлием координату X доски
                 if(xBoard <=self.prevWidth/2){
-                    xBoard =self.mouseX+2;
+                    xBoard =self.mouseX+2+self.step+self.step;
                     flag= true;
                 }else {
-                    xBoard = self.mouseX - widthBoard-2;
+                    xBoard = self.mouseX - widthBoard-2-self.step;
                     flag= false;
                 }
                 console.log("self.prevWidth/2",self.prevWidth/2);
@@ -623,22 +610,21 @@
 
                 function drawVerticalLine() {
                     //Не оптимизировано
-                    let y = self.mainHeight;
-                    ctx.fillStyle="#64ADED";
-                    ctx.beginPath();
-                    ctx.moveTo(self.mouseX,0);
-                    ctx.lineTo(self.mouseX,-y);
-                    ctx.lineTo(self.mouseX+self.step,-y);
-                    ctx.lineTo(self.mouseX+self.step,0);
-                    ctx.fill();
+                    let it = self.currentCoord.length-1;
+
+                     for(let i = it; i>=0;i--){
+                         let y = self.currentCoord[i][1];
+                         ctx.fillStyle=self.colors[self.currentCoord[i][0]];
+                         ctx.beginPath();
+                         ctx.moveTo(self.mouseX,0);
+                         ctx.lineTo(self.mouseX,y);
+                         ctx.lineTo(self.mouseX+self.step,y);
+                         ctx.lineTo(self.mouseX+self.step,0);
+                         ctx.fill();
+
+                    }
                 }
-                // function drawVerticalLine() {
-                //     ctx.strokeStyle =self.timeColor.gLine;
-                //     ctx.beginPath();
-                //     ctx.moveTo(self.mouseX,0);
-                //     ctx.lineTo(self.mouseX,-self.mainHeight);
-                //     ctx.stroke();
-                // }
+
                 this.timeId = requestAnimationFrame(this.drawInfoBoard);
             },
 
@@ -1022,7 +1008,10 @@
 
                 this.drawGraphs(ctxPreview,this.previewCoord,this.xStep);
                 this.drawGraphs(ctxMain,this.mainCoord,this.step);
-
+                if(this.infoboard){
+                    ctxMain.fillStyle = this.timeColor.fillPreview;
+                    ctxMain.fillRect(0,-this.mainHeight,this.prevWidth, this.mainHeight);
+                }
                 this.drawBox(ctxPreview);
                 this.drawMetrics(ctxMain);
                 // Все графики
