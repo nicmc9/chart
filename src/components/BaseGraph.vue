@@ -67,7 +67,7 @@
     export default {
         props: ['isNight', 'mainHeight', 'prevWidth', 'prevHeight', 'prevShift',
             'mainShift', 'mainCanvasHeight', 'prevCanvasHeight', 'boxStop', 'countLine', 'path', 'nameChart',
-            "previewCoord", "step", "mainCoord", "arrayForMainCoords","metric1YValue"
+            "previewCoord", "step", "mainCoord", "arrayForMainCoords", "metric1YValue"
         ],
         data: function () {
             return {
@@ -94,8 +94,9 @@
                 timeId: 0,  // таймер для сброса анимации
                 mouseX: 0,   // текущее положение мышки
                 infoboard: false,
-                currentData: {},  // данные из columns на которых сейчас инфоДоска
-                currentCoord:[],  // Для полоски инфоборда
+                objForBoardInfo: {},  // данные из columns на которых сейчас инфоДоска
+                currentCoord: [],  // Для полоски инфоборда
+                boardDate:null
             }
         },
         dayColor: {
@@ -276,33 +277,26 @@
                     return;
                 }
                 //  let D = {'y0': ['30%', 'Apples','37'],'y1':['25%', 'Mango','25'] };
-                let D = {};
+                self.objForBoardInfo = {};
                 let sum = 0;
                 self.currentCoord = [];
                 for (let i = 0; i < self.activGraph.length; i++) {
-                    D[self.activGraph[i]] = [];
-                    D[self.activGraph[i]].push(self.names[self.activGraph[i]]);
-                    D[self.activGraph[i]].push(self.arrayForMainCoords[i + 1][j]);
+                    self.objForBoardInfo[self.activGraph[i]] = [];
+                    self.objForBoardInfo[self.activGraph[i]].push(self.names[self.activGraph[i]]);
+                    self.objForBoardInfo[self.activGraph[i]].push(self.arrayForMainCoords[i + 1][j]);
 
                     sum += self.arrayForMainCoords[i + 1][j];
                     self.currentCoord.push([self.activGraph[i], self.mainCoord[i][j]]);
                 }
-                D['All'] = ['All', sum];
-                self.currentData = D;
-                 console.log('D',D);
-                 console.log('self.currentCoord',self.currentCoord);
+                self.objForBoardInfo['All'] = ['All', sum];
+                console.log('self.currentCoord', self.currentCoord);
             },
 
             drawInfoBoard() {
-
-
                 let self = this;
                 let ctx = this.ctxBoard;
-
-                let cDate = this.boardDate;
-                let D = this.currentData;
-             //   console.log('я рисую доску',D);
                 ctx.clearRect(0, -this.mainHeight - (this.mainShift / 2), this.prevWidth, this.mainCanvasHeight);
+
 
                 ctx.fillStyle = this.timeColor.board;
 
@@ -315,19 +309,14 @@
                 let widthTextString = 0;
                 //Для вычисления высоты борда количество элементо * на высоту строки
                 let count = 0;
-                for (let item in D) {
+                for (let item in self.objForBoardInfo) {
                     count++;
-                    let str = D[item].join(' ');
-                    let w = measureText(str);
+                    let str = self.objForBoardInfo[item].join(' ');
+                    let w = this.measureText(ctx,str);
                     if (w > widthTextString) {
                         widthTextString = w;
                     }
                 }
-
-                ctx.save();
-
-                ctx.shadowBlur = 2;                             ///
-                ctx.shadowColor = "rgba(0, 0, 0, 0.3)";         ///
                 console.log("widthTextString", widthTextString);
 
                 // Ширина доски  возьмем ширину текстовой строки и добавим 20%
@@ -347,85 +336,88 @@
                 console.log("self.prevWidth/2", self.prevWidth / 2);
                 console.log("xBoard", xBoard);
 
-                drawBoard(xBoard, -self.mainHeight, widthBoard, heightBoard, 10);
-                ctx.restore();
+                this.drawBoard(ctx, xBoard, -self.mainHeight, widthBoard, heightBoard, 10);
 
-                ctx.lineWidth = 2;
-                drawVerticalLine();
-                drawCurrentData();
-
-
-                function drawBoard(x, y, width, height, radius) {
-                    ctx.beginPath();
-                    ctx.moveTo(x + radius, y);
-                    ctx.lineTo(x + width - radius, y);
-                    ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-                    ctx.lineTo(x + width, y + height - radius);
-                    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-                    ctx.lineTo(x + radius, y + height);
-                    ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-                    ctx.lineTo(x, y + radius);
-                    ctx.quadraticCurveTo(x, y, x + radius, y);
-                    ctx.closePath();
-                    ctx.fill();
-                }
-
-                function measureText(str) {
-                    let temp = ctx.measureText(str);
-                    return temp.width;
-                }
-
-                function drawCurrentData() {
-                    //  let D = {'y0': ['30%', 'Apples','37'],'y1':['25%', 'Mango','25'] };
-                    ctx.fillStyle = self.timeColor.textInfo;
-                    ctx.font = "bold " + textSize + "px  sans-serif";
-                    if (!flag) {
-                        ctx.fillText(cDate, xBoard + 10, -self.mainHeight + textSize);
-                        ctx.fillText(">", xBoard + widthBoard - 20, -self.mainHeight + textSize);
-                    } else {
-                        let s = measureText(cDate);
-                        ctx.fillText(cDate, xBoard + widthBoard - s - 20, -self.mainHeight + textSize);
-                        ctx.fillText("<", xBoard + 5, -self.mainHeight + textSize);
-                    }
-                    ctx.font = textSize + "px  sans-serif";
-                    let y = textSize * 2.5;
-                    let size = 0;
-
-                    for (let item in D) {
-
-                        ctx.fillStyle = self.timeColor.textInfo;
-                        let str1 = D[item][0];
-                        size = measureText(str1);
-                        ctx.fillText(str1, xBoard + 5, -self.mainHeight + y);
-
-                        ctx.fillStyle = self.colors[item];
-                        let str3 = D[item][1];
-                        size = measureText(str3);
-                        ctx.fillText(str3, xBoard + widthBoard - size - 5, -self.mainHeight + y);
-                        y += textSize * 1.4;
-                    }
-                }
-
-                function drawVerticalLine() {
-                    //Не оптимизировано
-                    let it = self.currentCoord.length - 1;
-
-                    for (let i = it; i >= 0; i--) {
-                        let y = self.currentCoord[i][1];
-                        ctx.fillStyle = self.colors[self.currentCoord[i][0]];
-                        ctx.beginPath();
-                        ctx.moveTo(self.mouseX, 0);
-                        ctx.lineTo(self.mouseX, y);
-                        ctx.lineTo(self.mouseX + self.step, y);
-                        ctx.lineTo(self.mouseX + self.step, 0);
-                        ctx.fill();
-
-                    }
-                }
-
+                this.drawVerticalPillar(ctx);
+                this.drawCurrentData(ctx,textSize,xBoard,widthBoard,flag);
                 this.timeId = requestAnimationFrame(this.drawInfoBoard);
             },
 
+            drawCurrentData(ctx,textSize,xBoard,widthBoard,flag) {
+                let self = this;
+                // self.objForBoardInfo = {'y0': ['30%', 'Apples','37'],'y1':['25%', 'Mango','25'] };
+                ctx.fillStyle = self.timeColor.textInfo;
+                ctx.font = "bold " + textSize + "px  sans-serif";
+                if (!flag) {
+                    ctx.fillText(self.boardDate, xBoard + 10, -self.mainHeight + textSize);
+                    ctx.fillText(">", xBoard + widthBoard - 20, -self.mainHeight + textSize);
+                } else {
+                    let s = this.measureText(ctx,self.boardDate);
+                    ctx.fillText(self.boardDate, xBoard + widthBoard - s - 20, -self.mainHeight + textSize);
+                    ctx.fillText("<", xBoard + 5, -self.mainHeight + textSize);
+                }
+                ctx.font = textSize + "px  sans-serif";
+                let y = textSize * 2.5;
+                let size = 0;
+
+                for (let item in self.objForBoardInfo) {
+
+                    ctx.fillStyle = self.timeColor.textInfo;
+                    let str1 = self.objForBoardInfo[item][0];
+                    size = this.measureText(ctx,str1);
+                    ctx.fillText(str1, xBoard + 5, -self.mainHeight + y);
+
+                    ctx.fillStyle = self.colors[item];
+                    let str3 = self.objForBoardInfo[item][1];
+                    size = this.measureText(ctx,str3);
+                    ctx.fillText(str3, xBoard + widthBoard - size - 5, -self.mainHeight + y);
+                    y += textSize * 1.4;
+                }
+            },
+
+
+            drawVerticalPillar(ctx) {
+                let self = this;
+                //Не оптимизировано
+                //    ctx.lineWidth = 2;
+                let it = self.currentCoord.length - 1;
+
+                for (let i = it; i >= 0; i--) {
+
+                    let y = self.currentCoord[i][1];
+                    ctx.fillStyle = self.colors[self.currentCoord[i][0]];
+                    ctx.beginPath();
+                    ctx.moveTo(self.mouseX, 0);
+                    ctx.lineTo(self.mouseX, y);
+                    ctx.lineTo(self.mouseX + self.step, y);
+                    ctx.lineTo(self.mouseX + self.step, 0);
+                    ctx.fill();
+
+                }
+            },
+            drawBoard(ctx, x, y, width, height, radius) {
+                ctx.save();
+
+                ctx.shadowBlur = 2;                             ///
+                ctx.shadowColor = "rgba(0, 0, 0, 0.3)";         ///
+                ctx.beginPath();
+                ctx.moveTo(x + radius, y);
+                ctx.lineTo(x + width - radius, y);
+                ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+                ctx.lineTo(x + width, y + height - radius);
+                ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+                ctx.lineTo(x + radius, y + height);
+                ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+                ctx.lineTo(x, y + radius);
+                ctx.quadraticCurveTo(x, y, x + radius, y);
+                ctx.closePath();
+                ctx.fill();
+                ctx.restore();
+            },
+            measureText(ctx, str) {
+                let temp = ctx.measureText(str);
+                return temp.width;
+            },
             /////////////////////////  Compute Box Data /////////////////////////////////////////
 
             previewDown(type, event) {
