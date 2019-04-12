@@ -1186,11 +1186,6 @@
         },
 
         created() {
-            console.log('Base Graph created');
-        },
-
-        mounted() {
-
             let self = this;
             console.log('self.path', self.path);
             let path = self.path + '/overview.json';
@@ -1206,7 +1201,13 @@
             };
             this.loadXHR(func, path);
             // this.loadFetch(func,path);
-            console.log('Base Graph mounted');
+
+            console.log('Base Graph created');
+        },
+
+        mounted() {
+
+           console.log('Base Graph mounted');
 
             if (this.nameChart == "DailyBarChart") {
                 this.isButton = false;

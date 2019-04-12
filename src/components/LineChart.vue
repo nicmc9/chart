@@ -53,7 +53,6 @@
                 previewCoord: [],    //   [ [122, 'y0'] ,[123,'y1']]
                 arrayForMainCoords:[],  // массив значений из columns находящейся между start and end т.е. данные непосредственно сейчас отображаемые
                 step:0,  // шаг для координаты х на главном холсте
-                ratioMain: 1,   // отношение к системе координат холста и значений данных из colimns
                 // набор цветов по умолчанию дневного режима можно переопределить на все графики
                 mainCoord:[],
                 filteredData:[],
@@ -128,9 +127,9 @@
             setCurrentMainData(start,end) {
                 console.log(' setCurrentMainData') ;
                 this.arrayForMainCoords  =  this.getArrayForMainCoords(this.filteredData,start,end);
-                this.ratioMain =   this.getRatio(this.mainHeight,this.arrayForMainCoords,0);
+                let ratioMain =   this.getRatio(this.mainHeight,this.arrayForMainCoords,0);
                 //Коробка предпросмотра
-                this.mainCoord = this.getCoord(this.ratioMain,this.arrayForMainCoords,0);
+                this.mainCoord = this.getCoord(ratioMain,this.arrayForMainCoords,0);
                 console.log(' this.mainCoord', this.mainCoord);
             },
 
