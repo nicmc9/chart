@@ -64,10 +64,11 @@
 </template>
 
 <script>
+
     export default {
         props: ['isNight', 'mainHeight', 'prevWidth', 'prevHeight', 'prevShift',
             'mainShift', 'mainCanvasHeight', 'prevCanvasHeight', 'boxStop', 'countLine', 'path', 'nameChart',
-            "previewCoord", "step", "mainCoord", "arrayForMainCoords", "metric1YValue"
+            "previewCoord", "step", "mainCoord", "arrayForMainCoords", "metric1YValue","percentForBoard"
         ],
         data: function () {
             return {
@@ -125,11 +126,11 @@
                     this.timeColor = this.$options.dayColor;
                 }
 
-                // if(this.activGraph.length)  {
-                //     this.draw();
-                // }else{
-                //     this.defaultDraw();
-                // }
+                if(this.activGraph.length)  {
+                    this.drawAll();
+                }else{
+                    this.defaultDraw();
+                }
 
             },
             previewCoord: function () {
@@ -166,6 +167,9 @@
             },
             shiftY: function () {
                 return this.mainHeight / this.countLine;
+            },
+            shiftYP: function () {
+                return this.mainHeight / (this.countLine-1);
             },
         },
 
@@ -278,18 +282,40 @@
                 }
                 //  let D = {'y0': ['30%', 'Apples','37'],'y1':['25%', 'Mango','25'] };
                 self.objForBoardInfo = {};
-                let sum = 0;
-                self.currentCoord = [];
-                for (let i = 0; i < self.activGraph.length; i++) {
-                    self.objForBoardInfo[self.activGraph[i]] = [];
-                    self.objForBoardInfo[self.activGraph[i]].push(self.names[self.activGraph[i]]);
-                    self.objForBoardInfo[self.activGraph[i]].push(self.arrayForMainCoords[i + 1][j]);
 
-                    sum += self.arrayForMainCoords[i + 1][j];
-                    self.currentCoord.push([self.activGraph[i], self.mainCoord[i][j]]);
+                switch (this.nameChart) {
+                    case "PercentChart":
+                        self.setPercentBoardData(j, i);
+                        break;
+                    default:
+                        self.setBarBoardData(j, i);
                 }
-                self.objForBoardInfo['All'] = ['All', sum];
-                console.log('self.currentCoord', self.currentCoord);
+
+
+            },
+            setPercentBoardData(j, i){
+
+                for(let i = 0; i <this.activGraph.length; i++) {
+                    this.objForBoardInfo[this.activGraph[i]] = [];
+                    this.objForBoardInfo[this.activGraph[i]].push(this.percentForBoard[i][j]);
+                    this.objForBoardInfo[this.activGraph[i]].push(this.names[this.activGraph[i]]);
+                    this.objForBoardInfo[this.activGraph[i]].push(this.arrayForMainCoords[i + 1][j]);
+                }
+            },
+
+            setBarBoardData(j, i){
+                let sum = 0;
+                this.currentCoord = [];
+                for (let i = 0; i < this.activGraph.length; i++) {
+                    this.objForBoardInfo[this.activGraph[i]] = [];
+                    this.objForBoardInfo[this.activGraph[i]].push(this.names[this.activGraph[i]]);
+                    this.objForBoardInfo[this.activGraph[i]].push(this.arrayForMainCoords[i + 1][j]);
+
+                    sum += this.arrayForMainCoords[i + 1][j];
+                    this.currentCoord.push([this.activGraph[i], this.mainCoord[i][j]]);
+                }
+                this.objForBoardInfo['All'] = ['All', sum];
+                console.log('this.currentCoord', this.currentCoord);
             },
 
             drawInfoBoard() {
@@ -313,7 +339,6 @@
                     if (w > widthTextString) {
                         widthTextString = w;
                     }
-
                 }
                // console.log("widthTextString", widthTextString);
 
@@ -334,13 +359,63 @@
 
                 console.log("xBoard", xBoard);
                 self.drawBoard(ctx, xBoard, -self.mainHeight, widthBoard, heightBoard, 10);
-                self.drawVerticalPillar(ctx);
-                self.drawCurrentData(ctx,textSize,xBoard,widthBoard,flag);
+
+
+                switch (this.nameChart) {
+                    case "PercentChart":
+                        self.drawVerticalLine(ctx);
+                        self.drawPercentCurrentData(ctx,textSize,xBoard,widthBoard,flag);
+                        break;
+                    default:
+                        self.drawVerticalPillar(ctx);
+                        self.drawBarCurrentData(ctx,textSize,xBoard,widthBoard,flag);
+                }
+
                 self.timeId = requestAnimationFrame(self.drawInfoBoard);
             },
 
+            drawPercentCurrentData(ctx,textSize,xBoard,widthBoard,flag) {
+                let self =this;
+        //  let D = {'y0': ['30%', 'Apples','37'],'y1':['25%', 'Mango','25'] };
+        ctx.fillStyle = self.timeColor.textInfo;
 
-            drawCurrentData(ctx,textSize,xBoard,widthBoard,flag) {
+        if(!flag){
+            ctx.fillText(self.boardDate, xBoard + 10, -self.mainHeight + textSize );
+            ctx.fillText(">", xBoard + widthBoard -20, -self.mainHeight + textSize );
+        }else {
+            let s = this.measureText(ctx,self.boardDate);
+            ctx.fillText(self.boardDate, xBoard + widthBoard -s-20, -self.mainHeight + textSize );
+            ctx.fillText("<", xBoard + 5, -self.mainHeight + textSize );
+        }
+
+
+        let y = textSize*2.5;
+        let size =0;
+        let etalon = '30%';
+        let pos = this.measureText(ctx,etalon);
+        for (let item in self.objForBoardInfo) {
+
+            ctx.font="bold "+textSize+"px  sans-serif";
+
+            ctx.fillStyle = self.timeColor.textInfo;
+            let str1 = self.objForBoardInfo[item][0]+'%';
+            size = this.measureText(ctx,str1);
+            ctx.fillText(str1,xBoard +5+ pos -size,-self.mainHeight+y);
+
+            ctx.font=textSize+"px  sans-serif";
+            ctx.fillStyle = self.timeColor.textInfo;
+            let str2 = self.objForBoardInfo[item][1];
+            ctx.fillText(str2,xBoard + pos+10,-self.mainHeight+y);
+
+
+            ctx.fillStyle = self.colors[item];
+            let str3 = self.objForBoardInfo[item][2];
+            size = this.measureText(ctx,str3);
+            ctx.fillText(str3,xBoard + widthBoard -size-5,-self.mainHeight+y);
+            y += textSize*1.2;
+        }
+    },
+            drawBarCurrentData(ctx,textSize,xBoard,widthBoard,flag) {
                 let self = this;
                 // self.objForBoardInfo = {'y0': ['30%', 'Apples','37'],'y1':['25%', 'Mango','25'] };
                 ctx.fillStyle = self.timeColor.textInfo;
@@ -392,6 +467,14 @@
 
                 }
             },
+            drawVerticalLine(ctx) {
+                let self =this;
+        ctx.strokeStyle =self.timeColor.gLine;
+        ctx.beginPath();
+        ctx.moveTo(self.mouseX,0);
+        ctx.lineTo(self.mouseX,-self.mainHeight);
+        ctx.stroke();
+    },
             drawBoard(ctx, x, y, width, height, radius) {
                 ctx.save();
                 ctx.fillStyle = this.timeColor.board;
@@ -573,8 +656,14 @@
 
                 this.drawDate(ctx);
 
-                this.drawYmeterPercent(ctx);
-                //this.drawYmeterBar(ctx);
+                switch (this.nameChart) {
+                    case "PercentChart":
+                        this.drawYmeterPercent(ctx);
+                        break;
+                    default:
+                        this.drawYmeterBar(ctx);
+                }
+
             },
 
 
@@ -639,10 +728,10 @@
                 ctx.beginPath();
                 const step = 25;
                 let text =0;
-                for(let i =0 ; i < this.countLine ; i++){
-                    ctx.moveTo(0,-this.shiftY*i);
-                    ctx.lineTo(this.prevWidth ,-this.shiftY*i);
-                    ctx.fillText(text, 5, -this.shiftY*i-5);
+                for(let i =0 ; i < this.countLine; i++){
+                    ctx.moveTo(0,-this.shiftYP*i);
+                    ctx.lineTo(this.prevWidth ,-this.shiftYP*i);
+                    ctx.fillText(text, 5, -this.shiftYP*i-5);
                     text +=step;
                 }
                 ctx.stroke();
@@ -728,12 +817,35 @@
 
                     let tempArray = data[i];
                     let color = this.colors[this.activGraph[i]];
-                    this.drawGraph(tempArray, ctx, color, step);
+
+                    switch (this.nameChart) {
+                        case "PercentChart":
+                            this.drawGraphPercent(tempArray, ctx, color, step);
+                            break;
+                        default:
+                            this.drawGraphBar(tempArray, ctx, color, step);
+                    }
+
                 }
 
             },
 
-            drawGraph(yCoord, ctx, color, step) {
+            drawGraphPercent(yCoord ,ctx,color,step){
+                let x = 0;
+                ctx.fillStyle = color;
+                ctx.beginPath();
+                ctx.moveTo(x,0);
+                for(let i=0; i < yCoord.length; i++){
+
+                    ctx.lineTo( x,yCoord[i]);
+                    x += step;
+                }
+                //console.log('x',x);
+                ctx.lineTo( x,0);
+                ctx.fill();
+            },
+
+            drawGraphBar(yCoord, ctx, color, step) {
                 //  console.log('я рисую график');
                 let x = 0;
                 ctx.fillStyle = color;
@@ -745,7 +857,6 @@
                     ctx.lineTo(x + step, yCoord[i]);
                     ctx.lineTo(x + step, 0);
                     x += step;
-
                 }
                 ctx.fill();
             },
@@ -775,14 +886,13 @@
             },
 
             drawMainCanvas() {
-
                 let ctxMain = this.ctxMain;
                 ctxMain.clearRect(0, -this.mainHeight - (this.mainShift / 2), this.prevWidth, this.mainCanvasHeight);
                 // Сначала заполнаем массив данных от start До end
 
                 this.drawGraphs(ctxMain, this.mainCoord, this.step);
 
-                if (this.flagMouseInBoard) {
+                if (this.flagMouseInBoard&&this.nameChart =="Bar") {
                     ctxMain.fillStyle = this.timeColor.fillPreview;
                     ctxMain.fillRect(0, -this.mainHeight, this.prevWidth, this.mainHeight);
                 }
@@ -810,6 +920,7 @@
                 this.drawPreviewCanvas();
 
             },
+
             // registerEvents(){
             //     this.$on('draw', this.drawPreviewCanvas());
             // },
@@ -953,7 +1064,7 @@
             // this.loadFetch(func,path);
             console.log('Base Graph mounted');
         },
-        name: "BaseGraph",
+        name: "BaseGraph"
     }
 
 </script>

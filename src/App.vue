@@ -97,11 +97,14 @@
 </template>
 
 <script>
+
+
+import BaseGraph from './components/BaseGraph.vue'
 import LineChart from './components/LineChart.vue'
 import BarChart from './components/BarChart.vue'
 import StackedBarChart from './components/StackedBarChart.vue'
 import PercentChart from './components/PercentChart.vue'
-import BaseGraph from './components/BaseGraph.vue'
+
 
 export default {
   data: function () {
