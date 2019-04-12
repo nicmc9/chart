@@ -41,42 +41,9 @@
 <!--                :boxStop = boxStop-->
 <!--                :countLine = countLine-->
 <!--        ></line-chart>-->
-<!--      <li>-->
-<!--        <stacked-bar-chart-->
-
-<!--                :isNight =  isNight-->
-<!--                :mainHeight  = mainHeight-->
-<!--                :prevWidth  = prevWidth-->
-<!--                :prevHeight  = prevHeight-->
-<!--                :prevShift  = prevShift-->
-<!--                :mainShift  = mainShift-->
-<!--                :mainCanvasHeight  = mainCanvasHeight-->
-<!--                :prevCanvasHeight = prevCanvasHeight-->
-<!--                :boxStop = boxStop-->
-<!--                :countLine = countLine-->
-<!--        ></stacked-bar-chart>-->
-
-<!--      </li>-->
-
-<!--      <li>-->
-<!--        <bar-chart-->
-<!--                nameChart ="Bar Chart"-->
-<!--                path = "contest/4"-->
-<!--                :isNight =  isNight-->
-<!--                :mainHeight  = mainHeight-->
-<!--                :prevWidth  = prevWidth-->
-<!--                :prevHeight  = prevHeight-->
-<!--                :prevShift  = prevShift-->
-<!--                :mainShift  = mainShift-->
-<!--                :mainCanvasHeight  = mainCanvasHeight-->
-<!--                :prevCanvasHeight = prevCanvasHeight-->
-<!--                :boxStop = boxStop-->
-<!--                :countLine = countLine-->
-<!--        ></bar-chart>-->
-
-<!--      </li>-->
       <li>
-        <percent-chart
+        <stacked-bar-chart
+
                 :isNight =  isNight
                 :mainHeight  = mainHeight
                 :prevWidth  = prevWidth
@@ -87,7 +54,38 @@
                 :prevCanvasHeight = prevCanvasHeight
                 :boxStop = boxStop
                 :countLine = countLine
-        ></percent-chart>
+        ></stacked-bar-chart>
+
+      </li>
+
+      <li>
+        <daily-bar-chart
+                :isNight =  isNight
+                :mainHeight  = mainHeight
+                :prevWidth  = prevWidth
+                :prevHeight  = prevHeight
+                :prevShift  = prevShift
+                :mainShift  = mainShift
+                :mainCanvasHeight  = mainCanvasHeight
+                :prevCanvasHeight = prevCanvasHeight
+                :boxStop = boxStop
+                :countLine = countLine
+        ></daily-bar-chart>
+
+<!--      </li>-->
+<!--      <li>-->
+<!--        <percent-chart-->
+<!--                :isNight =  isNight-->
+<!--                :mainHeight  = mainHeight-->
+<!--                :prevWidth  = prevWidth-->
+<!--                :prevHeight  = prevHeight-->
+<!--                :prevShift  = prevShift-->
+<!--                :mainShift  = mainShift-->
+<!--                :mainCanvasHeight  = mainCanvasHeight-->
+<!--                :prevCanvasHeight = prevCanvasHeight-->
+<!--                :boxStop = boxStop-->
+<!--                :countLine = countLine-->
+<!--        ></percent-chart>-->
 
       </li>
     </ul>
@@ -101,7 +99,7 @@
 
 import BaseGraph from './components/BaseGraph.vue'
 import LineChart from './components/LineChart.vue'
-import BarChart from './components/BarChart.vue'
+import DailyBarChart from './components/DailyBarChart.vue'
 import StackedBarChart from './components/StackedBarChart.vue'
 import PercentChart from './components/PercentChart.vue'
 
@@ -181,7 +179,7 @@ export default {
   components: {
     BaseGraph,
     LineChart,
-    BarChart,
+    DailyBarChart,
     StackedBarChart,
     PercentChart
   }

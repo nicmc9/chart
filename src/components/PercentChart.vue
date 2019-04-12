@@ -19,7 +19,6 @@
                 :mainCoord = "mainCoord"
                 :arrayForMainCoords = "arrayForMainCoords"
                 :step = "step"
-                :metric1YValue="metric1YValue"
                 :percentForBoard="percentForBoard"
 
                 v-on:base-percent-data="basePercentData"
@@ -39,7 +38,6 @@
                'countLine'],
         data: function () {
             return {
-
                 previewCoord: [],    //   [ [122, 'y0'] ,[123,'y1']]
                 arrayForMainCoords:[],  // массив значений из columns находящейся между start and end т.е. данные непосредственно сейчас отображаемые
                 currentData:{},  // данные из columns на которых сейчас инфоДоска
@@ -53,29 +51,7 @@
                 filteredData:[],
             }
         },
-
-        computed: {
-            //Заглушка когда поставим дефолты параметров
-            metric1YValue: function () {
-                     return 1;
-            }
-        },
-
         methods: {
-
-/////////////////////////  infoBoard /////////////////////////////////////////
-
-            getDataForBoard(){
-
-                let tempArray =[];
-                let yArray =[];
-                this.dataForBoard=[];
-                this.percentForBoard=[];
-                yArray  = this.columns[0];
-
-
-            console.log(' this.percentForBoard', this.percentForBoard);
-            },
 
             getArrayForMainCoords(columns,start,end){
                 let tempArray =[];
@@ -89,7 +65,6 @@
                 }
                 this.step =    this.prevWidth/(tempArray.length-1);
                 console.log('data',data);
-
                 return data;
 
             },

@@ -2,7 +2,7 @@
 
     <div>
           <base-graph
-                  nameChart ="Bar Chart"
+                  nameChart ="StakedBarChart"
                   path = "/contest/3/"
                  :prevWidth = "prevWidth"
                  :mainCanvasHeight = "mainCanvasHeight"
@@ -36,9 +36,18 @@
     import BaseGraph from './BaseGraph.vue'
 
     export default {
-        props: ['isNight','mainHeight','prevWidth','prevHeight','prevShift',
-               'mainShift','mainCanvasHeight','prevCanvasHeight','boxStop',
-               'countLine'],
+        props: {
+            isNight:Boolean,
+            mainHeight:Number,
+            prevWidth:Number,
+            prevHeight:Number,
+            prevShift:Number,
+            mainShift:Number,
+            mainCanvasHeight:Number,
+            prevCanvasHeight:Number,
+            boxStop:Number,
+            countLine:Number,
+        },
         data: function () {
             return {
 
@@ -51,7 +60,6 @@
                 ratioMain: 1,   // отношение к системе координат холста и значений данных из colimns
                 // набор цветов по умолчанию дневного режима можно переопределить на все графики
                 mainCoord:[],
-                dataForBoard:[],
                 filteredData:[],
                 maxValue: 1,
             }
@@ -154,6 +162,15 @@
                 //Коробка предпросмотра
 
             },
+            basePercentData(){
+
+                console.log('Вызвали наконец');
+                let sum  = this.getSumData(this.filteredData);
+                let ratioPrev =   this.getRatio(this.prevHeight,sum);
+                this.previewCoord = this.getCoord(ratioPrev,this.filteredData,1);
+                console.log('this.previewCoord',this.previewCoord);
+
+            },
             setFilteredData(newGraph,columns){
                let yArray =[];
                 this.filteredData=[];
@@ -171,16 +188,6 @@
                console.log('newGraph',newGraph);
             },
 
-            basePercentData(start,end){
-
-                console.log('Вызвали наконец');
-                let sum  = this.getSumData(this.filteredData);
-                let ratioPrev =   this.getRatio(this.prevHeight,sum);
-                this.previewCoord = this.getCoord(ratioPrev,this.filteredData,1);
-                console.log('this.previewCoord',this.previewCoord);
-
-             },
-
         },
 
         mounted(){
@@ -193,7 +200,3 @@
         }
     }
 </script>
-
-<style scoped>
-
-</style>

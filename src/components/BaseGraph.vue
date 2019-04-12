@@ -40,7 +40,7 @@
         <br>
         <!--        <p>touchBoard -&#45;&#45; {{touchBoard}}  this.timeId -&#45;&#45;{{this.timeId}} </p>-->
 
-        <ul class="checkbox">
+        <ul v-if="isButton" class="checkbox">
 
 
             <li class="checkbox__li" v-for="(val,key) in names">
@@ -57,6 +57,13 @@
             </li>
 
         </ul>
+
+        <ul v-else class="checkbox">
+            <li class="checkbox__li">
+                <button :href="file" class="save" download="chart" @click="save">Save chart</button>
+            </li>
+
+        </ul>
         <br>
 
     </div>
@@ -66,10 +73,46 @@
 <script>
 
     export default {
-        props: ['isNight', 'mainHeight', 'prevWidth', 'prevHeight', 'prevShift',
-            'mainShift', 'mainCanvasHeight', 'prevCanvasHeight', 'boxStop', 'countLine', 'path', 'nameChart',
-            "previewCoord", "step", "mainCoord", "arrayForMainCoords", "metric1YValue","percentForBoard"
-        ],
+         props: {
+            isNight:Boolean,
+            mainHeight:Number,
+            prevWidth:Number,
+            prevHeight:Number,
+            prevShift:Number,
+            mainShift:Number,
+            mainCanvasHeight:Number,
+            prevCanvasHeight:Number,
+            boxStop:Number,
+            countLine:Number,
+            path:String,
+            nameChart:String,
+            step:Number,
+            metric1YValue:{
+                type: Number,
+                default: 100
+            },
+            isButton:{
+                 type: Boolean,
+                 default: true
+             },
+            previewCoord:Array,
+            mainCoord:Array,
+            arrayForMainCoords:Array,
+            percentForBoard:{
+                type: Array,
+                default: function () {
+                    return []
+                }
+            },
+
+            // title: String,
+            // likes: Number,
+            // isPublished: Boolean,
+            // commentIds: Array,
+            // author: Object,
+            // callback: Function,
+            // contactsPromise: Promise // или любой другой конструктор
+        },
         data: function () {
             return {
                 chart: null,
@@ -287,8 +330,11 @@
                     case "PercentChart":
                         self.setPercentBoardData(j, i);
                         break;
+                    case "DailyBarChart":
+                        self.setDailyBarBoardData(j, i);
+                        break;
                     default:
-                        self.setBarBoardData(j, i);
+                        self.setStackedBarBoardData(j, i);
                 }
 
 
@@ -303,7 +349,7 @@
                 }
             },
 
-            setBarBoardData(j, i){
+            setStackedBarBoardData(j, i){
                 let sum = 0;
                 this.currentCoord = [];
                 for (let i = 0; i < this.activGraph.length; i++) {
@@ -317,6 +363,30 @@
                 this.objForBoardInfo['All'] = ['All', sum];
                 console.log('this.currentCoord', this.currentCoord);
             },
+
+            setDailyBarBoardData(j, i){
+
+                this.currentCoord = [];
+                for (let i = 0; i < this.activGraph.length; i++) {
+                    this.objForBoardInfo[this.activGraph[i]] = [];
+                    let d = formatDigits(this.arrayForMainCoords[i + 1][j]) ;
+                    this.objForBoardInfo[this.activGraph[i]].push(this.names[this.activGraph[i]]);
+                    this.objForBoardInfo[this.activGraph[i]].push(d);
+
+                    this.currentCoord.push([this.activGraph[i], this.mainCoord[i][j]]);
+                }
+
+
+                function formatDigits(digit){
+                    let d = +digit;
+                    d =  d.toLocaleString('ru');
+                    return d;
+
+
+                }
+                console.log('this.currentCoord', this.currentCoord);
+            },
+
 
             drawInfoBoard() {
                 let self = this;
@@ -378,7 +448,7 @@
                 let self =this;
         //  let D = {'y0': ['30%', 'Apples','37'],'y1':['25%', 'Mango','25'] };
         ctx.fillStyle = self.timeColor.textInfo;
-
+        ctx.font="bold "+textSize+"px  sans-serif";
         if(!flag){
             ctx.fillText(self.boardDate, xBoard + 10, -self.mainHeight + textSize );
             ctx.fillText(">", xBoard + widthBoard -20, -self.mainHeight + textSize );
@@ -395,7 +465,7 @@
         let pos = this.measureText(ctx,etalon);
         for (let item in self.objForBoardInfo) {
 
-            ctx.font="bold "+textSize+"px  sans-serif";
+
 
             ctx.fillStyle = self.timeColor.textInfo;
             let str1 = self.objForBoardInfo[item][0]+'%';
@@ -737,21 +807,29 @@
                 ctx.stroke();
 
             },
-
-            drawYmeterBar(ctx) {
-                //  ctx.fillStyle = "#000";
+            drawYmeterBar(ctx){
                 ctx.beginPath();
                 ctx.fillText("0", 5, -5);
-                for (let i = 1; i < this.countLine + 1; i++) {
-                    let z = Math.round((this.metric1YValue * i) / 1000);
-                    z = z + "K";
-                    ctx.moveTo(0, -this.shiftY * i);
-                    ctx.lineTo(this.prevWidth, -this.shiftY * i);
-                    ctx.fillText(z, 5, -this.shiftY * i - 5);
+                for(let i =1 ; i < this.countLine+1 ; i++){
+
+                    let z = this.metric1YValue*i;
+                    if(z > 1000000){
+                        z = Math.round(z/1000000);
+                        z = z+"M";
+                    }else if(z>1000&&z<1000000){
+                        z = Math.round(z / 1000);
+                        z = z + "K";
+                    }
+
+                    ctx.moveTo(0,-this.shiftY*i);
+                    ctx.lineTo(this.prevWidth ,-this.shiftY*i);
+                    ctx.fillText(z, 5, -this.shiftY*i-5);
                 }
                 ctx.stroke();
 
             },
+
+
             setDateArray() {
                 let options = {
                     month: 'short',
@@ -891,13 +969,16 @@
                 // Сначала заполнаем массив данных от start До end
 
                 this.drawGraphs(ctxMain, this.mainCoord, this.step);
+                //
+                // if (this.flagMouseInBoard&&this.nameChart =="StakedBarChart"||this.nameChart =="DailyBarChart") {
+                //     ctxMain.fillStyle = this.timeColor.fillPreview;
+                //     ctxMain.fillRect(0, -this.mainHeight, this.prevWidth, this.mainHeight);
+                // }
 
-                if (this.flagMouseInBoard&&this.nameChart =="Bar") {
+                if (this.flagMouseInBoard&&(this.nameChart =="StakedBarChart"||this.nameChart =="DailyBarChart")) {
                     ctxMain.fillStyle = this.timeColor.fillPreview;
                     ctxMain.fillRect(0, -this.mainHeight, this.prevWidth, this.mainHeight);
                 }
-
-
                 this.drawMetrics(ctxMain);
                 this.drawMainDateRange(ctxMain);
             },
@@ -1063,6 +1144,11 @@
             this.loadXHR(func, path);
             // this.loadFetch(func,path);
             console.log('Base Graph mounted');
+
+            if(this.nameChart=="DailyBarChart"){
+                this.isButton =false;
+            }
+
         },
         name: "BaseGraph"
     }
