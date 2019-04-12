@@ -93,7 +93,7 @@
                 touchBoard: false,
                 timeId: 0,  // таймер для сброса анимации
                 mouseX: 0,   // текущее положение мышки
-                infoboard: false,
+                flagMouseInBoard: false,
                 objForBoardInfo: {},  // данные из columns на которых сейчас инфоДоска
                 currentCoord: [],  // Для полоски инфоборда
                 boardDate:null
@@ -215,7 +215,7 @@
                 console.log('я вошел');
                 if (!this.activGraph.length) return;
                 this.touchBoard = true;
-                this.infoboard = true;
+                this.flagMouseInBoard = true;
                 this.timeId = requestAnimationFrame(this.drawInfoBoard);
 
                 this.drawAll();
@@ -225,7 +225,7 @@
 
                 console.log('я вышел');
                 this.touchBoard = false;
-                this.infoboard = false;
+                this.flagMouseInBoard = false;
                 cancelAnimationFrame(this.timeId);
                 this.ctxBoard.clearRect(0, -this.mainHeight - (this.mainShift / 2), this.prevWidth, this.mainCanvasHeight);
                 this.drawAll();
@@ -294,18 +294,15 @@
 
             drawInfoBoard() {
                 let self = this;
-                let ctx = this.ctxBoard;
-                ctx.clearRect(0, -this.mainHeight - (this.mainShift / 2), this.prevWidth, this.mainCanvasHeight);
-
-
-                ctx.fillStyle = this.timeColor.board;
+                let ctx = self.ctxBoard;
+                ctx.clearRect(0, -self.mainHeight - (self.mainShift / 2), self.prevWidth, self.mainCanvasHeight);
 
                 // Сначала задали размер текста в зависимости от
                 //размера  экрана
                 let textSize = Math.round(this.mainHeight * 0.03);
-                ctx.font = textSize + "px  sans-serif";
+              //  ctx.font = textSize + "px  sans-serif";
 
-                console.log("textSize", textSize);
+            //    console.log("textSize", textSize);
                 let widthTextString = 0;
                 //Для вычисления высоты борда количество элементо * на высоту строки
                 let count = 0;
@@ -316,8 +313,9 @@
                     if (w > widthTextString) {
                         widthTextString = w;
                     }
+
                 }
-                console.log("widthTextString", widthTextString);
+               // console.log("widthTextString", widthTextString);
 
                 // Ширина доски  возьмем ширину текстовой строки и добавим 20%
                 let widthBoard = widthTextString + widthTextString * 0.4;
@@ -333,15 +331,14 @@
                     xBoard = self.mouseX - widthBoard - 2 - self.step;
                     flag = false;
                 }
-                console.log("self.prevWidth/2", self.prevWidth / 2);
+
                 console.log("xBoard", xBoard);
-
-                this.drawBoard(ctx, xBoard, -self.mainHeight, widthBoard, heightBoard, 10);
-
-                this.drawVerticalPillar(ctx);
-                this.drawCurrentData(ctx,textSize,xBoard,widthBoard,flag);
-                this.timeId = requestAnimationFrame(this.drawInfoBoard);
+                self.drawBoard(ctx, xBoard, -self.mainHeight, widthBoard, heightBoard, 10);
+                self.drawVerticalPillar(ctx);
+                self.drawCurrentData(ctx,textSize,xBoard,widthBoard,flag);
+                self.timeId = requestAnimationFrame(self.drawInfoBoard);
             },
+
 
             drawCurrentData(ctx,textSize,xBoard,widthBoard,flag) {
                 let self = this;
@@ -397,7 +394,7 @@
             },
             drawBoard(ctx, x, y, width, height, radius) {
                 ctx.save();
-
+                ctx.fillStyle = this.timeColor.board;
                 ctx.shadowBlur = 2;                             ///
                 ctx.shadowColor = "rgba(0, 0, 0, 0.3)";         ///
                 ctx.beginPath();
@@ -771,7 +768,7 @@
 
                 this.drawGraphs(ctxMain, this.mainCoord, this.step);
 
-                if (this.infoboard) {
+                if (this.flagMouseInBoard) {
                     ctxMain.fillStyle = this.timeColor.fillPreview;
                     ctxMain.fillRect(0, -this.mainHeight, this.prevWidth, this.mainHeight);
                 }
