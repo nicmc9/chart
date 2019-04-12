@@ -68,7 +68,7 @@
 
             // Высляються цифры в левой шкале
             metric1YValue: function () {
-                let val = this.maxValue / this.countLine - 1;  //this.countLine-1
+                let val = this.maxValue / this.countLine -1;  //this.countLine-1
                 return Math.ceil(val);
             }
 

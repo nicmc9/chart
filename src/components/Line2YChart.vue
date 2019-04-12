@@ -2,8 +2,8 @@
 
     <div>
         <base-graph
-                nameChart ="LineChart"
-                path = "/contest/1/"
+                nameChart ="Line2YChart"
+                path = "/contest/2/"
                 :prevWidth = "prevWidth"
                 :mainCanvasHeight = "mainCanvasHeight"
                 :prevCanvasHeight = "prevCanvasHeight"
@@ -19,7 +19,7 @@
                 :mainCoord = "mainCoord"
                 :arrayForMainCoords = "arrayForMainCoords"
                 :step = "step"
-                :metric1YValue="metric1YValue"
+                :metricYValue="metricYValue"
 
                 v-on:base-percent-data="basePercentData"
                 v-on:set-main-data="setCurrentMainData"
@@ -47,7 +47,7 @@
             boxStop:Number,
             countLine:Number,
         },
-        data: function () {
+       data: function () {
             return {
                 previewCoord: [],    //   [ [122, 'y0'] ,[123,'y1']]
                 arrayForMainCoords:[],  // массив значений из columns находящейся между start and end т.е. данные непосредственно сейчас отображаемые
@@ -60,32 +60,6 @@
         },
 
         methods: {
-            drawYmeter(ctx) {
-
-                if (this.chart.y_scaled) {
-
-                    ctx.fillStyle = this.colors['y1'];
-
-                    for (let i = 0; i < this.countLine + 1; i++) {
-
-                        let size = this.metric2YValue * i;
-                        let text = ctx.measureText(size);
-                        let x = this.prevWidth - text.width;
-                        ctx.fillText(this.metric2YValue * i, x, -this.shiftY * i - 5);
-                    }
-                    ctx.fillStyle = this.colors['y0'];
-                }
-
-                ctx.beginPath();
-                for (let i = 0; i < this.countLine + 1; i++) {
-                    ctx.moveTo(0, -this.shiftY * i);
-                    ctx.lineTo(this.prevWidth, -this.shiftY * i);
-                    ctx.fillText(this.metric1YValue * i, 5, -this.shiftY * i - 5);
-                }
-                ctx.stroke();
-
-            },
-
 
             getArrayForMainCoords(columns,start,end){
                 let tempArray =[];
@@ -103,13 +77,11 @@
 
             },
 
-
             getRatio(height,data,init) {
-                let ratioPreview = [];
+                let ratio = [];
+                this.metricYValue =[];
                 let max = 0;
-
-                let val = this.maxValue[0]/this.countLine-1;  //this.countLine-1
-                 //Пропускаем первый элемент массива содержащий даты
+      //Пропускаем первый элемент массива содержащий даты
                 for (let i = 1; i < data.length; i++) {
                     let y = data[i];
 
@@ -123,14 +95,14 @@
                         max = Math.max.apply(null, y);
                     }
                     //т.е. для большого канваса
-                    if(init ==0) {
-                        this.metricYValue.push(Math.ceil(max / (this.countLine - 1)));
+                    if(init === 0) {
+                        this.metricYValue.push( Math.round(max / this.countLine));
                     }
                     let rait = max / height;
-                    ratioPreview.push(Math.round(rait * 100) / 100);
+                    ratio.push(Math.round(rait * 100) / 100);
                 }
-                console.log("ratioPreview",this.ratioPreview);
-                return ratioPreview;
+                console.log("ratio",this.ratio);
+                return ratio;
             },
 
 
@@ -171,8 +143,6 @@
 
                 console.log('this.previewCoord',this.previewCoord);
             },
-
-
             setFilteredData(newGraph,columns){
                 let yArray =[];
                 this.filteredData=[];
@@ -188,6 +158,8 @@
                 console.log('this.filteredData',this.filteredData);
                 console.log('newGraph',newGraph);
             },
+
+
         },
 
         mounted(){

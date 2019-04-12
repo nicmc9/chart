@@ -8,25 +8,8 @@
 
 
     <ul class="select-chart">
-      <li>
-        <line-chart
-                :isNight =  isNight
-                :mainHeight  = mainHeight
-                :prevWidth  = prevWidth
-                :prevHeight  = prevHeight
-                :prevShift  = prevShift
-                :mainShift  = mainShift
-                :mainCanvasHeight  = mainCanvasHeight
-                :prevCanvasHeight = prevCanvasHeight
-                :boxStop = boxStop
-                :countLine = countLine
-                ></line-chart>
-      </li>
-
 <!--      <li>-->
 <!--        <line-chart-->
-<!--                 nameChart ="LineChart 2Y axes"-->
-<!--                 path = "contest/2"-->
 <!--                :isNight =  isNight-->
 <!--                :mainHeight  = mainHeight-->
 <!--                :prevWidth  = prevWidth-->
@@ -37,8 +20,25 @@
 <!--                :prevCanvasHeight = prevCanvasHeight-->
 <!--                :boxStop = boxStop-->
 <!--                :countLine = countLine-->
-<!--        ></line-chart>-->
-<!--      <li>-->
+<!--                ></line-chart>-->
+<!--      </li>-->
+
+
+<!--        <li>-->
+<!--            <line2-y-chart-->
+<!--                    :isNight =  isNight-->
+<!--                    :mainHeight  = mainHeight-->
+<!--                    :prevWidth  = prevWidth-->
+<!--                    :prevHeight  = prevHeight-->
+<!--                    :prevShift  = prevShift-->
+<!--                    :mainShift  = mainShift-->
+<!--                    :mainCanvasHeight  = mainCanvasHeight-->
+<!--                    :prevCanvasHeight = prevCanvasHeight-->
+<!--                    :boxStop = boxStop-->
+<!--                    :countLine = countLine-->
+<!--            ></line2-y-chart>-->
+<!--        </li>-->
+<!--        <li>-->
 <!--        <stacked-bar-chart-->
 
 <!--                :isNight =  isNight-->
@@ -70,21 +70,21 @@
 <!--        ></daily-bar-chart>-->
 
 <!--      </li>-->
-<!--      <li>-->
-<!--        <percent-chart-->
-<!--                :isNight =  isNight-->
-<!--                :mainHeight  = mainHeight-->
-<!--                :prevWidth  = prevWidth-->
-<!--                :prevHeight  = prevHeight-->
-<!--                :prevShift  = prevShift-->
-<!--                :mainShift  = mainShift-->
-<!--                :mainCanvasHeight  = mainCanvasHeight-->
-<!--                :prevCanvasHeight = prevCanvasHeight-->
-<!--                :boxStop = boxStop-->
-<!--                :countLine = countLine-->
-<!--        ></percent-chart>-->
+      <li>
+        <percent-chart
+                :isNight =  isNight
+                :mainHeight  = mainHeight
+                :prevWidth  = prevWidth
+                :prevHeight  = prevHeight
+                :prevShift  = prevShift
+                :mainShift  = mainShift
+                :mainCanvasHeight  = mainCanvasHeight
+                :prevCanvasHeight = prevCanvasHeight
+                :boxStop = boxStop
+                :countLine = countLine
+        ></percent-chart>
 
-<!--      </li>-->
+      </li>
     </ul>
 
 </div>
@@ -96,6 +96,7 @@
 
 import BaseGraph from './components/BaseGraph.vue'
 import LineChart from './components/LineChart.vue'
+import Line2YChart from './components/Line2YChart.vue'
 import DailyBarChart from './components/DailyBarChart.vue'
 import StackedBarChart from './components/StackedBarChart.vue'
 import PercentChart from './components/PercentChart.vue'
@@ -108,7 +109,6 @@ export default {
       hWindow:null,
       prevWidth:null,
       countLine: 5,  // соличество линий на главной
-
       }
   },
   computed: {
@@ -176,6 +176,7 @@ export default {
   components: {
     BaseGraph,
     LineChart,
+    Line2YChart,
     DailyBarChart,
     StackedBarChart,
     PercentChart

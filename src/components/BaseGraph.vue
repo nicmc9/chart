@@ -91,6 +91,7 @@
                 type: Number,
                 default: 100
             },
+            metricYValue: Array,
             isButton: {
                 type: Boolean,
                 default: true
@@ -340,6 +341,9 @@
                     case "LineChart":
                         self.setDailyBarBoardData(j, i);
                         break;
+                    case "Line2YChart":
+                        self.setDailyBarBoardData(j, i);
+                        break;
                     case "StackedBarChart":
                         self.setStackedBarBoardData(j, i);
                         break;
@@ -444,6 +448,11 @@
                         self.drawPercentCurrentData(ctx, xBoard, widthBoard, flag);
                         break;
                     case "LineChart":
+                        self.drawVerticalLine(ctx);
+                        self.drawBarCurrentData(ctx, xBoard, widthBoard, flag);
+                        self.drawArcs(ctx);
+                        break;
+                    case "Line2YChart":
                         self.drawVerticalLine(ctx);
                         self.drawBarCurrentData(ctx, xBoard, widthBoard, flag);
                         self.drawArcs(ctx);
@@ -767,12 +776,14 @@
                     case "LineChart":
                         this.drawYmeterLine(ctx);
                         break;
+                    case "Line2YChart":
+                        this.drawYmeterLine2Y(ctx);
+                        break;
                     default:
                         this.drawYmeterBar(ctx);
                 }
 
             },
-
 
             drawDate(ctx) {
                 let self = this;
@@ -838,6 +849,43 @@
                     ctx.fillText(this.metric1YValue * i, 5, -this.shiftY * i - 5);
                 }
                 ctx.stroke();
+
+            },
+
+            drawYmeterLine2Y(ctx) {
+                let self =this;
+
+                ctx.beginPath();
+                for (let i = 0; i < self.countLine + 1; i++) {
+                    ctx.moveTo(0, -self.shiftY * i);
+                    ctx.lineTo(self.prevWidth, -self.shiftY * i);
+                }
+                ctx.stroke();
+
+                let objY ={
+                    'y0':function (j) {
+                        ctx.fillStyle = self.colors['y0'];
+                        ctx.beginPath();
+                        for (let i = 0; i < self.countLine + 1; i++) {
+                            ctx.moveTo(0, -self.shiftY * i);
+                            ctx.fillText(self.metricYValue[j] * i, 5, -self.shiftY * i - 5);
+                        }
+                        ctx.stroke();
+                   },
+                    'y1':function (j) {
+                        ctx.fillStyle = self.colors['y1'];
+                        for (let i = 0; i < self.countLine + 1; i++) {
+                            let text = self.metricYValue[j] * i;
+                            let size = self.measureText(ctx,text);
+                            let x = self.prevWidth - size;
+                            console.log('x', x);
+                            ctx.fillText(text, x, -self.shiftY * i - 5);
+                        }
+                    }
+                };
+                 for (let j = 0; j < this.activGraph.length; j++) {
+                     objY[this.activGraph[j]](j);
+                }
 
             },
 
@@ -949,6 +997,9 @@
                             this.drawGraphPercent(tempArray, ctx, color, step);
                             break;
                         case "LineChart":
+                            this.drawGraphLine(tempArray, ctx, color, step);
+                            break;
+                        case "Line2YChart":
                             this.drawGraphLine(tempArray, ctx, color, step);
                             break;
                         default:
