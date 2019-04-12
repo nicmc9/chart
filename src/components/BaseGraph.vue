@@ -73,32 +73,32 @@
 <script>
 
     export default {
-         props: {
-            isNight:Boolean,
-            mainHeight:Number,
-            prevWidth:Number,
-            prevHeight:Number,
-            prevShift:Number,
-            mainShift:Number,
-            mainCanvasHeight:Number,
-            prevCanvasHeight:Number,
-            boxStop:Number,
-            countLine:Number,
-            path:String,
-            nameChart:String,
-            step:Number,
-            metric1YValue:{
+        props: {
+            isNight: Boolean,
+            mainHeight: Number,
+            prevWidth: Number,
+            prevHeight: Number,
+            prevShift: Number,
+            mainShift: Number,
+            mainCanvasHeight: Number,
+            prevCanvasHeight: Number,
+            boxStop: Number,
+            countLine: Number,
+            path: String,
+            nameChart: String,
+            step: Number,
+            metric1YValue: {
                 type: Number,
                 default: 100
             },
-            isButton:{
-                 type: Boolean,
-                 default: true
-             },
-            previewCoord:Array,
-            mainCoord:Array,
-            arrayForMainCoords:Array,
-            percentForBoard:{
+            isButton: {
+                type: Boolean,
+                default: true
+            },
+            previewCoord: Array,
+            mainCoord: Array,
+            arrayForMainCoords: Array,
+            percentForBoard: {
                 type: Array,
                 default: function () {
                     return []
@@ -140,7 +140,7 @@
                 flagMouseInBoard: false,
                 objForBoardInfo: {},  // данные из columns на которых сейчас инфоДоска
                 currentCoord: [],  // Для полоски инфоборда
-                boardDate:null
+                boardDate: null
             }
         },
         dayColor: {
@@ -169,9 +169,9 @@
                     this.timeColor = this.$options.dayColor;
                 }
 
-                if(this.activGraph.length)  {
+                if (this.activGraph.length) {
                     this.drawAll();
-                }else{
+                } else {
                     this.defaultDraw();
                 }
 
@@ -212,8 +212,12 @@
                 return this.mainHeight / this.countLine;
             },
             shiftYP: function () {
-                return this.mainHeight / (this.countLine-1);
+                return this.mainHeight / (this.countLine - 1);
             },
+            boardTextSize: function () {
+                return Math.round(this.mainHeight * 0.03);
+            },
+
         },
 
         methods: {
@@ -333,15 +337,21 @@
                     case "DailyBarChart":
                         self.setDailyBarBoardData(j, i);
                         break;
+                    case "LineChart":
+                        self.setDailyBarBoardData(j, i);
+                        break;
+                    case "StackedBarChart":
+                        self.setStackedBarBoardData(j, i);
+                        break;
                     default:
                         self.setStackedBarBoardData(j, i);
                 }
 
 
             },
-            setPercentBoardData(j, i){
+            setPercentBoardData(j, i) {
 
-                for(let i = 0; i <this.activGraph.length; i++) {
+                for (let i = 0; i < this.activGraph.length; i++) {
                     this.objForBoardInfo[this.activGraph[i]] = [];
                     this.objForBoardInfo[this.activGraph[i]].push(this.percentForBoard[i][j]);
                     this.objForBoardInfo[this.activGraph[i]].push(this.names[this.activGraph[i]]);
@@ -349,7 +359,7 @@
                 }
             },
 
-            setStackedBarBoardData(j, i){
+            setStackedBarBoardData(j, i) {
                 let sum = 0;
                 this.currentCoord = [];
                 for (let i = 0; i < this.activGraph.length; i++) {
@@ -364,12 +374,12 @@
                 console.log('this.currentCoord', this.currentCoord);
             },
 
-            setDailyBarBoardData(j, i){
+            setDailyBarBoardData(j, i) {
 
                 this.currentCoord = [];
                 for (let i = 0; i < this.activGraph.length; i++) {
                     this.objForBoardInfo[this.activGraph[i]] = [];
-                    let d = formatDigits(this.arrayForMainCoords[i + 1][j]) ;
+                    let d = formatDigits(this.arrayForMainCoords[i + 1][j]);
                     this.objForBoardInfo[this.activGraph[i]].push(this.names[this.activGraph[i]]);
                     this.objForBoardInfo[this.activGraph[i]].push(d);
 
@@ -377,13 +387,14 @@
                 }
 
 
-                function formatDigits(digit){
+                function formatDigits(digit) {
                     let d = +digit;
-                    d =  d.toLocaleString('ru');
+                    d = d.toLocaleString('ru');
                     return d;
 
 
                 }
+
                 console.log('this.currentCoord', this.currentCoord);
             },
 
@@ -393,28 +404,24 @@
                 let ctx = self.ctxBoard;
                 ctx.clearRect(0, -self.mainHeight - (self.mainShift / 2), self.prevWidth, self.mainCanvasHeight);
 
-                // Сначала задали размер текста в зависимости от
-                //размера  экрана
-                let textSize = Math.round(this.mainHeight * 0.03);
-              //  ctx.font = textSize + "px  sans-serif";
 
-            //    console.log("textSize", textSize);
+
                 let widthTextString = 0;
                 //Для вычисления высоты борда количество элементо * на высоту строки
                 let count = 0;
                 for (let item in self.objForBoardInfo) {
                     count++;
                     let str = self.objForBoardInfo[item].join(' ');
-                    let w = this.measureText(ctx,str);
+                    let w = this.measureText(ctx, str);
                     if (w > widthTextString) {
                         widthTextString = w;
                     }
                 }
-               // console.log("widthTextString", widthTextString);
+                // console.log("widthTextString", widthTextString);
 
                 // Ширина доски  возьмем ширину текстовой строки и добавим 20%
-                let widthBoard = widthTextString + widthTextString * 0.4;
-                let heightBoard = textSize * (count + 5);
+                let widthBoard = widthTextString + widthTextString * 0.6;
+                let heightBoard = self.boardTextSize * (count + 5);
                 // 2  это небольшой отступ от края
                 // если true то слева
                 let flag = true;
@@ -434,86 +441,90 @@
                 switch (this.nameChart) {
                     case "PercentChart":
                         self.drawVerticalLine(ctx);
-                        self.drawPercentCurrentData(ctx,textSize,xBoard,widthBoard,flag);
+                        self.drawPercentCurrentData(ctx, xBoard, widthBoard, flag);
+                        break;
+                    case "LineChart":
+                        self.drawVerticalLine(ctx);
+                        self.drawBarCurrentData(ctx, xBoard, widthBoard, flag);
+                        self.drawArcs(ctx);
                         break;
                     default:
                         self.drawVerticalPillar(ctx);
-                        self.drawBarCurrentData(ctx,textSize,xBoard,widthBoard,flag);
+                        self.drawBarCurrentData(ctx, xBoard, widthBoard, flag);
                 }
 
                 self.timeId = requestAnimationFrame(self.drawInfoBoard);
             },
 
-            drawPercentCurrentData(ctx,textSize,xBoard,widthBoard,flag) {
-                let self =this;
-        //  let D = {'y0': ['30%', 'Apples','37'],'y1':['25%', 'Mango','25'] };
-        ctx.fillStyle = self.timeColor.textInfo;
-        ctx.font="bold "+textSize+"px  sans-serif";
-        if(!flag){
-            ctx.fillText(self.boardDate, xBoard + 10, -self.mainHeight + textSize );
-            ctx.fillText(">", xBoard + widthBoard -20, -self.mainHeight + textSize );
-        }else {
-            let s = this.measureText(ctx,self.boardDate);
-            ctx.fillText(self.boardDate, xBoard + widthBoard -s-20, -self.mainHeight + textSize );
-            ctx.fillText("<", xBoard + 5, -self.mainHeight + textSize );
-        }
-
-
-        let y = textSize*2.5;
-        let size =0;
-        let etalon = '30%';
-        let pos = this.measureText(ctx,etalon);
-        for (let item in self.objForBoardInfo) {
-
-
-
-            ctx.fillStyle = self.timeColor.textInfo;
-            let str1 = self.objForBoardInfo[item][0]+'%';
-            size = this.measureText(ctx,str1);
-            ctx.fillText(str1,xBoard +5+ pos -size,-self.mainHeight+y);
-
-            ctx.font=textSize+"px  sans-serif";
-            ctx.fillStyle = self.timeColor.textInfo;
-            let str2 = self.objForBoardInfo[item][1];
-            ctx.fillText(str2,xBoard + pos+10,-self.mainHeight+y);
-
-
-            ctx.fillStyle = self.colors[item];
-            let str3 = self.objForBoardInfo[item][2];
-            size = this.measureText(ctx,str3);
-            ctx.fillText(str3,xBoard + widthBoard -size-5,-self.mainHeight+y);
-            y += textSize*1.2;
-        }
-    },
-            drawBarCurrentData(ctx,textSize,xBoard,widthBoard,flag) {
+            drawPercentCurrentData(ctx, xBoard, widthBoard, flag) {
                 let self = this;
-                // self.objForBoardInfo = {'y0': ['30%', 'Apples','37'],'y1':['25%', 'Mango','25'] };
+                //  let D = {'y0': ['30%', 'Apples','37'],'y1':['25%', 'Mango','25'] };
                 ctx.fillStyle = self.timeColor.textInfo;
-                ctx.font = "bold " + textSize + "px  sans-serif";
+                ctx.font = "bold " + self.boardTextSize + "px  sans-serif";
                 if (!flag) {
-                    ctx.fillText(self.boardDate, xBoard + 10, -self.mainHeight + textSize);
-                    ctx.fillText(">", xBoard + widthBoard - 20, -self.mainHeight + textSize);
+                    ctx.fillText(self.boardDate, xBoard + 10, -self.mainHeight + self.boardTextSize);
+                    ctx.fillText(">", xBoard + widthBoard - 20, -self.mainHeight + self.boardTextSize);
                 } else {
-                    let s = this.measureText(ctx,self.boardDate);
-                    ctx.fillText(self.boardDate, xBoard + widthBoard - s - 20, -self.mainHeight + textSize);
-                    ctx.fillText("<", xBoard + 5, -self.mainHeight + textSize);
+                    let s = this.measureText(ctx, self.boardDate);
+                    ctx.fillText(self.boardDate, xBoard + widthBoard - s - 20, -self.mainHeight + self.boardTextSize);
+                    ctx.fillText("<", xBoard + 5, -self.mainHeight + self.boardTextSize);
                 }
-                ctx.font = textSize + "px  sans-serif";
-                let y = textSize * 2.5;
+
+
+                let y = self.boardTextSize * 2.5;
+                let size = 0;
+                let etalon = '30%';
+                let pos = this.measureText(ctx, etalon);
+                for (let item in self.objForBoardInfo) {
+
+
+                    ctx.fillStyle = self.timeColor.textInfo;
+                    let str1 = self.objForBoardInfo[item][0] + '%';
+                    size = this.measureText(ctx, str1);
+                    ctx.fillText(str1, xBoard + 5 + pos - size, -self.mainHeight + y);
+
+                    ctx.font = self.boardTextSize + "px  sans-serif";
+                    ctx.fillStyle = self.timeColor.textInfo;
+                    let str2 = self.objForBoardInfo[item][1];
+                    ctx.fillText(str2, xBoard + pos + 10, -self.mainHeight + y);
+
+
+                    ctx.fillStyle = self.colors[item];
+                    let str3 = self.objForBoardInfo[item][2];
+                    size = this.measureText(ctx, str3);
+                    ctx.fillText(str3, xBoard + widthBoard - size - 5, -self.mainHeight + y);
+                    y += self.boardTextSize * 1.2;
+                }
+            },
+            drawBarCurrentData(ctx, xBoard, widthBoard, flag) {
+                let self = this;
+                // self.objForBoardInfo = {'y0': [ 'Apples','37'],'y1':[ 'Mango','25'] };
+                ctx.fillStyle = self.timeColor.textInfo;
+                ctx.font = "bold " + self.boardTextSize + "px  sans-serif";
+                if (!flag) {
+                    ctx.fillText(self.boardDate, xBoard + 10, -self.mainHeight + self.boardTextSize);
+                    ctx.fillText(">", xBoard + widthBoard - 20, -self.mainHeight + self.boardTextSize);
+                } else {
+                    let s = this.measureText(ctx, self.boardDate);
+                    ctx.fillText(self.boardDate, xBoard + widthBoard - s - 20, -self.mainHeight + self.boardTextSize);
+                    ctx.fillText("<", xBoard + 5, -self.mainHeight + self.boardTextSize);
+                }
+                ctx.font = self.boardTextSize + "px  sans-serif";
+                let y = self.boardTextSize * 2.5;
                 let size = 0;
 
                 for (let item in self.objForBoardInfo) {
 
                     ctx.fillStyle = self.timeColor.textInfo;
                     let str1 = self.objForBoardInfo[item][0];
-                    size = this.measureText(ctx,str1);
+                    size = this.measureText(ctx, str1);
                     ctx.fillText(str1, xBoard + 5, -self.mainHeight + y);
 
                     ctx.fillStyle = self.colors[item];
                     let str3 = self.objForBoardInfo[item][1];
-                    size = this.measureText(ctx,str3);
+                    size = this.measureText(ctx, str3);
                     ctx.fillText(str3, xBoard + widthBoard - size - 5, -self.mainHeight + y);
-                    y += textSize * 1.4;
+                    y += self.boardTextSize * 1.4;
                 }
             },
 
@@ -537,14 +548,37 @@
 
                 }
             },
+
+
             drawVerticalLine(ctx) {
-                let self =this;
-        ctx.strokeStyle =self.timeColor.gLine;
-        ctx.beginPath();
-        ctx.moveTo(self.mouseX,0);
-        ctx.lineTo(self.mouseX,-self.mainHeight);
-        ctx.stroke();
-    },
+                let self = this;
+                ctx.strokeStyle = self.timeColor.gLine;
+                ctx.beginPath();
+                ctx.moveTo(self.mouseX, 0);
+                ctx.lineTo(self.mouseX, -self.mainHeight);
+                ctx.stroke();
+            },
+
+            drawArcs(ctx) {
+
+                let self = this;
+                ctx.fillStyle =self.timeColor.board;
+                ctx.lineWidth =2;
+                for (let i = 0; i < self.currentCoord.length; i++) {
+
+                    ctx.strokeStyle = self.colors[self.activGraph[i]];
+
+                    let y = self.currentCoord[i][1];
+
+                    ctx.beginPath();
+                    ctx.arc(self.mouseX, y, 5, 0, Math.PI * 2, true);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.arc(self.mouseX, y, 5, 0, Math.PI * 2, true);
+                    ctx.stroke();
+
+                }
+            },
             drawBoard(ctx, x, y, width, height, radius) {
                 ctx.save();
                 ctx.fillStyle = this.timeColor.board;
@@ -730,6 +764,9 @@
                     case "PercentChart":
                         this.drawYmeterPercent(ctx);
                         break;
+                    case "LineChart":
+                        this.drawYmeterLine(ctx);
+                        break;
                     default:
                         this.drawYmeterBar(ctx);
                 }
@@ -792,38 +829,49 @@
                     ctx.stroke();
                 }
             },
+            drawYmeterLine(ctx) {
 
-            drawYmeterPercent(ctx){
-                //  ctx.fillStyle = "#000";
                 ctx.beginPath();
-                const step = 25;
-                let text =0;
-                for(let i =0 ; i < this.countLine; i++){
-                    ctx.moveTo(0,-this.shiftYP*i);
-                    ctx.lineTo(this.prevWidth ,-this.shiftYP*i);
-                    ctx.fillText(text, 5, -this.shiftYP*i-5);
-                    text +=step;
+                for (let i = 0; i < this.countLine + 1; i++) {
+                    ctx.moveTo(0, -this.shiftY * i);
+                    ctx.lineTo(this.prevWidth, -this.shiftY * i);
+                    ctx.fillText(this.metric1YValue * i, 5, -this.shiftY * i - 5);
                 }
                 ctx.stroke();
 
             },
-            drawYmeterBar(ctx){
+
+            drawYmeterPercent(ctx) {
+                //  ctx.fillStyle = "#000";
+                ctx.beginPath();
+                const step = 25;
+                let text = 0;
+                for (let i = 0; i < this.countLine; i++) {
+                    ctx.moveTo(0, -this.shiftYP * i);
+                    ctx.lineTo(this.prevWidth, -this.shiftYP * i);
+                    ctx.fillText(text, 5, -this.shiftYP * i - 5);
+                    text += step;
+                }
+                ctx.stroke();
+
+            },
+            drawYmeterBar(ctx) {
                 ctx.beginPath();
                 ctx.fillText("0", 5, -5);
-                for(let i =1 ; i < this.countLine+1 ; i++){
+                for (let i = 1; i < this.countLine + 1; i++) {
 
-                    let z = this.metric1YValue*i;
-                    if(z > 1000000){
-                        z = Math.round(z/1000000);
-                        z = z+"M";
-                    }else if(z>1000&&z<1000000){
+                    let z = this.metric1YValue * i;
+                    if (z > 1000000) {
+                        z = Math.round(z / 1000000);
+                        z = z + "M";
+                    } else if (z > 1000 && z < 1000000) {
                         z = Math.round(z / 1000);
                         z = z + "K";
                     }
 
-                    ctx.moveTo(0,-this.shiftY*i);
-                    ctx.lineTo(this.prevWidth ,-this.shiftY*i);
-                    ctx.fillText(z, 5, -this.shiftY*i-5);
+                    ctx.moveTo(0, -this.shiftY * i);
+                    ctx.lineTo(this.prevWidth, -this.shiftY * i);
+                    ctx.fillText(z, 5, -this.shiftY * i - 5);
                 }
                 ctx.stroke();
 
@@ -900,6 +948,9 @@
                         case "PercentChart":
                             this.drawGraphPercent(tempArray, ctx, color, step);
                             break;
+                        case "LineChart":
+                            this.drawGraphLine(tempArray, ctx, color, step);
+                            break;
                         default:
                             this.drawGraphBar(tempArray, ctx, color, step);
                     }
@@ -907,19 +958,31 @@
                 }
 
             },
+            drawGraphLine(yCoord, ctx, color, step) {
+                let x = 0;
+                ctx.strokeStyle = color;
+                ctx.beginPath();
+                ctx.moveTo(x, yCoord[0]);
+                for (let i = 1; i < yCoord.length; i++) {
+                    x += step;
+                    ctx.lineTo(x, yCoord[i]);
 
-            drawGraphPercent(yCoord ,ctx,color,step){
+                }
+                ctx.stroke();
+            },
+
+            drawGraphPercent(yCoord, ctx, color, step) {
                 let x = 0;
                 ctx.fillStyle = color;
                 ctx.beginPath();
-                ctx.moveTo(x,0);
-                for(let i=0; i < yCoord.length; i++){
+                ctx.moveTo(x, 0);
+                for (let i = 0; i < yCoord.length; i++) {
 
-                    ctx.lineTo( x,yCoord[i]);
+                    ctx.lineTo(x, yCoord[i]);
                     x += step;
                 }
                 //console.log('x',x);
-                ctx.lineTo( x,0);
+                ctx.lineTo(x, 0);
                 ctx.fill();
             },
 
@@ -975,7 +1038,7 @@
                 //     ctxMain.fillRect(0, -this.mainHeight, this.prevWidth, this.mainHeight);
                 // }
 
-                if (this.flagMouseInBoard&&(this.nameChart =="StakedBarChart"||this.nameChart =="DailyBarChart")) {
+                if (this.flagMouseInBoard && (this.nameChart == "StakedBarChart" || this.nameChart == "DailyBarChart")) {
                     ctxMain.fillStyle = this.timeColor.fillPreview;
                     ctxMain.fillRect(0, -this.mainHeight, this.prevWidth, this.mainHeight);
                 }
@@ -1145,8 +1208,8 @@
             // this.loadFetch(func,path);
             console.log('Base Graph mounted');
 
-            if(this.nameChart=="DailyBarChart"){
-                this.isButton =false;
+            if (this.nameChart == "DailyBarChart") {
+                this.isButton = false;
             }
 
         },

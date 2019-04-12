@@ -158,7 +158,10 @@
             setCurrentMainData(start, end) {
                 console.log(' setCurrentMainData');
                 this.arrayForMainCoords = this.getArrayForMainCoords(this.filteredData, start, end);
+
                 let sum = this.getSumData(this.arrayForMainCoords);
+
+
                 this.ratioMain = this.getRatio(this.mainHeight, sum);
                 //Коробка предпросмотра
                 this.mainCoord = this.getCoord(this.ratioMain, this.arrayForMainCoords, 0);
@@ -171,6 +174,7 @@
 
                 console.log('Вызвали наконец');
                 let sum = this.getSumData(this.filteredData);
+
                 let ratioPrev = this.getRatio(this.prevHeight, sum);
                 this.previewCoord = this.getCoord(ratioPrev, this.filteredData, 1);
                 console.log('this.previewCoord', this.previewCoord);
