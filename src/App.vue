@@ -41,22 +41,22 @@
 <!--                :boxStop = boxStop-->
 <!--                :countLine = countLine-->
 <!--        ></line-chart>-->
-      <li>
-        <stacked-bar-chart
+<!--      <li>-->
+<!--        <stacked-bar-chart-->
 
-                :isNight =  isNight
-                :mainHeight  = mainHeight
-                :prevWidth  = prevWidth
-                :prevHeight  = prevHeight
-                :prevShift  = prevShift
-                :mainShift  = mainShift
-                :mainCanvasHeight  = mainCanvasHeight
-                :prevCanvasHeight = prevCanvasHeight
-                :boxStop = boxStop
-                :countLine = countLine
-        ></stacked-bar-chart>
+<!--                :isNight =  isNight-->
+<!--                :mainHeight  = mainHeight-->
+<!--                :prevWidth  = prevWidth-->
+<!--                :prevHeight  = prevHeight-->
+<!--                :prevShift  = prevShift-->
+<!--                :mainShift  = mainShift-->
+<!--                :mainCanvasHeight  = mainCanvasHeight-->
+<!--                :prevCanvasHeight = prevCanvasHeight-->
+<!--                :boxStop = boxStop-->
+<!--                :countLine = countLine-->
+<!--        ></stacked-bar-chart>-->
 
-      </li>
+<!--      </li>-->
 
 <!--      <li>-->
 <!--        <bar-chart-->
@@ -75,21 +75,21 @@
 <!--        ></bar-chart>-->
 
 <!--      </li>-->
-<!--      <li>-->
-<!--        <percent-chart-->
-<!--                :isNight =  isNight-->
-<!--                :mainHeight  = mainHeight-->
-<!--                :prevWidth  = prevWidth-->
-<!--                :prevHeight  = prevHeight-->
-<!--                :prevShift  = prevShift-->
-<!--                :mainShift  = mainShift-->
-<!--                :mainCanvasHeight  = mainCanvasHeight-->
-<!--                :prevCanvasHeight = prevCanvasHeight-->
-<!--                :boxStop = boxStop-->
-<!--                :countLine = countLine-->
-<!--        ></percent-chart>-->
+      <li>
+        <percent-chart
+                :isNight =  isNight
+                :mainHeight  = mainHeight
+                :prevWidth  = prevWidth
+                :prevHeight  = prevHeight
+                :prevShift  = prevShift
+                :mainShift  = mainShift
+                :mainCanvasHeight  = mainCanvasHeight
+                :prevCanvasHeight = prevCanvasHeight
+                :boxStop = boxStop
+                :countLine = countLine
+        ></percent-chart>
 
-<!--      </li>-->
+      </li>
     </ul>
 
 </div>

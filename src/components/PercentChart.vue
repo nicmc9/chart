@@ -16,7 +16,15 @@
                 :boxStop = boxStop
                 :countLine = countLine
 
+                :previewCoord="previewCoord"
+                :mainCoord = "mainCoord"
+                :arrayForMainCoords = "arrayForMainCoords"
+                :step = "step"
+                :metric1YValue="metric1YValue"
+
                 v-on:base-percent-data="basePercentData"
+                v-on:set-main-data="setCurrentMainData"
+                v-on:set-active-graph="setFilteredData"
         ></base-graph>
 
     </div>
@@ -25,78 +33,43 @@
 </template>
 
 <script>
+    import BaseGraph from './BaseGraph.vue'
 
     export default {
         props: ['isNight','mainHeight','prevWidth','prevHeight','prevShift',
                'mainShift','mainCanvasHeight','prevCanvasHeight','boxStop',
-               'countLine','path','nameChart'],
+               'countLine'],
         data: function () {
             return {
 
                 previewCoord: [],    //   [ [122, 'y0'] ,[123,'y1']]
-                // максимальное значение данных в columns для y координат
-                maxValue: 1,
-                selectedBox: false, // флаг выбора самой коробки
-                selectedLeftSide: false, // флаг выбора левого столбца коробки
-                selectedRightSide: false, // флаг выбора правого столбца коробки
-                touchBoard: false,
-                timeId: 0,  // таймер для сброса анимации
-                mouseX:0,   // текущее положение мышки
-                mainCurrentData:[],  // массив значений из columns находящейся между start and end т.е. данные непосредственно сейчас отображаемые
+
+                arrayForMainCoords:[],  // массив значений из columns находящейся между start and end т.е. данные непосредственно сейчас отображаемые
                 currentData:{},  // данные из columns на которых сейчас инфоДоска
                 step:0,  // шаг для координаты х на главном холсте
-                ratioMain: 1,   // отношение к системе координат холста и значений данных из colimns
-                // набор цветов по умолчанию дневного режима можно переопределить на все графики
                 percentData:[],
                 mainCoord:[],
+                allMainCoord:[],
                 dataForBoard:[],
                 boardDate:null,
-                percentForBoard:[]
+                percentForBoard:[],
+                filteredData:[],
 
             }
         },
 
 
         computed: {
-            // геттер вычисляемого значения
-            // чтобы уложиться на горизонтальной линии
-            // Уменьшаем на 1 и получаем равные доли
-            // в коломнс первое значение техническое поэтому уменьшаем еще на 1
-            xStep: function () {
-                return  this.prevWidth/(this.columns[0].length-2);
-            },
-            // Сдвигаем на 1 чтобы в результирующих массивах всегда пропускался первый индекс
-            // в котором информация
-            start: function () {
-                return Math.ceil( this.boxXcoord/this.xStep +1);
-            },
+            //Заглушка когда поставим дефолты параметров
 
-            end: function () {
-                return Math.ceil( this.start + this.boxWidth/this.xStep);
-            },
-            shiftY: function () {
-                return  this.mainHeight/(this.countLine-1);
-            },
+            metric1YValue: function () {
+                     return 1;
+            }
         },
-
 
         methods: {
 
 
-            /// методы событий изменяющие данные
-
-            isIntoSlider(mouseX){
-                return mouseX>this.boxXcoord&&mouseX<this.boxXcoord+this.boxWidth;
-            },
-            isIntoLeftSide(mouseX){
-                // console.log('this.mouse.x',this.mouse.x);
-                return mouseX>=this.boxXcoord&&mouseX<=(this.boxXcoord+15);  // зависит от параметра в функции drawLine let widthLine = 15;
-            },
-
-            isIntoRightSide(mouseX){
-
-                return mouseX>=(this.boxXcoord + this.boxWidth-15)&&mouseX<=(this.boxXcoord + this.boxWidth);  // зависит от параметра в функции drawLine let widthLine = 15;
-            },
 
             /////////////////////////  Compute Box Data /////////////////////////////////////////
 
@@ -498,34 +471,39 @@
 
 /////////////////////////  draw() /////////////////////////////////////////
 
+            getArrayForMainCoords(columns,start,end){
+                let tempArray =[];
+                let data =[];
+                let yArray =[];
 
-            setCurrentMainData(){
+                for(let i = 0; i < columns.length;i++ ) {
+                    yArray  = columns[i];
+                    tempArray = yArray.slice(start,end);
+                    data.push(tempArray);
+                }
+                console.log('data',data);
+                this.step =    this.prevWidth/(tempArray.length-1);
+                return data;
+
+            },
+
+            setCurrentMainData(start,end){
+
+                this.arrayForMainCoords  =  this.getArrayForMainCoords(this.filteredData,start,end);
 
                 let tempArray =[];
-                this.mainCurrentData=[];
+                this.mainCoord=[];
                 let yArray =[];
-                    //В цикле только данные по Y
-
-                    // let yArray  = this.columns[0];
-                    // tempArray = yArray.slice(this.start,this.end);
-                    //
-                    // this.mainCurrentData.push(tempArray);
-
-                for(let i = 0; i < this.mainCoord.length;i++ ) {
-                    yArray  = this.mainCoord[i];
-                    tempArray = yArray.slice(this.start,this.end);
-                    this.mainCurrentData.push(tempArray);
+                for(let i = 0; i < this.allMainCoord.length;i++ ) {
+                    yArray  = this.allMainCoord[i];
+                    tempArray = yArray.slice(start,end);
+                    this.mainCoord.push(tempArray);
                 }
-                console.log('this.mainCurrentData',this.mainCurrentData);
-
-                this.step =    this.prevWidth/(tempArray.length-1);
-                this.getDataForBoard();
-
+               console.log('this.mainCoord',this.mainCoord);
             },
 
 
             drawGraph(yCoord ,ctx,color,step){
-
 
                 let x = 0;
                 ctx.fillStyle = color;
@@ -540,45 +518,7 @@
                 ctx.lineTo( x,0);
                 ctx.fill();
             },
-            drawBox(ctx){
-           //     console.log('я рисую коробку');
 
-                ctx.strokeStyle=this.timeColor.box;
-                //Координата правой часта коробки
-                let rightSideBox = this.boxXcoord + this.boxWidth;
-
-                // Затем главный бокс
-                let d = this.prevShift/2; // Раньше было 5
-
-                let widthLine = 15;
-                let r =widthLine/2;  //r нам нужен чтобы рамка рисовалась внутри холста без него она выходит за холст на половину
-                ctx.lineWidth =widthLine;
-
-                ctx.beginPath();
-                ctx.moveTo(this.boxXcoord+r,-this.prevHeight-d);
-                ctx.lineTo(this.boxXcoord+r,d);
-                ctx.moveTo(rightSideBox-r,-this.prevHeight-d);
-                ctx.lineTo(rightSideBox-r,d);
-                ctx.stroke();
-
-                ctx.lineWidth =4;
-                ctx.beginPath();
-                ctx.moveTo(this.boxXcoord,-this.prevHeight-d);
-                ctx.lineTo(rightSideBox,-this.prevHeight-d);
-                ctx.moveTo(rightSideBox,d);
-                ctx.lineTo(this.boxXcoord,d);
-                ctx.stroke();
-
-            },
-            drawFillBox(ctx){
-
-                let d = this.prevShift/2;
-
-                ctx.fillStyle = this.timeColor.fillPreview;
-                let rightSideBox = this.boxXcoord + this.boxWidth;
-                ctx.fillRect(0,-this.prevHeight-d,this.boxXcoord, this.prevCanvasHeight);
-                ctx.fillRect(rightSideBox,-this.prevHeight-d,this.prevWidth-rightSideBox, this.prevCanvasHeight);
-            },
 
             drawMetrics(ctx){
 
@@ -655,57 +595,35 @@
                 }
             },
 
-            drawYmeter(ctx){
 
-              //  ctx.fillStyle = "#000";
-
-                ctx.beginPath();
-                const step = 25;
-                let text =0;
-                for(let i =0 ; i < this.countLine ; i++){
-                    ctx.moveTo(0,-this.shiftY*i);
-                    ctx.lineTo(this.prevWidth ,-this.shiftY*i);
-                    ctx.fillText(text, 5, -this.shiftY*i-5);
-                    text +=step;
-                }
-                ctx.stroke();
-
-            },
 
             getSumData(){
                 let sum = 0;
                 let sumData =[];
                 // Идем по длинне всех данных за основу время взяли
-                let len = this.columns[0].length;
+                let len = this.filteredData[0].length;
 
                 for(let i = 1; i < len;i++ ) {
 
-                    for(let j = 1 ; j < this.columns.length; j++ ) {
-                        let yArray  = this.columns[j];
-                        if(this.activGraph.indexOf(yArray[0])=== -1){
-                            continue;
-                        }
-                      sum += yArray[i];
+                    for(let j = 1 ; j < this.filteredData.length; j++ ) {
+                        let yArray  = this.filteredData[j];
+                        sum += yArray[i];
                     }
                   sumData.push(sum);
                     sum = 0;
                 }
-
                 console.log('this.sumData',sumData) ;
-                     return sumData;
+              return sumData;
             },
 
             setPercentData(){
                 let sum  = this.getSumData();
                  let str = [];
                 this.percentData =[];
-                 let len = this.columns[0].length;
+                 let len = this.filteredData[0].length;
                 // Идем по длинне всех данных за основу время взяли
-               for(let i = 1 ; i < this.columns.length; i++ ) {
-                        let yArray = this.columns[i];
-                   if(this.activGraph.indexOf(yArray[0])=== -1){
-                       continue;
-                   }
+               for(let i = 1 ; i < this.filteredData.length; i++ ) {
+                        let yArray = this.filteredData[i];
                         for (let j = 1; j < len; j++) {
                            str.push(Math.round((yArray[j] * 100) / sum[j-1]));
                             //Пулучаем значение процента в сумме данных конкретного значения
@@ -736,7 +654,6 @@
                         }
 
                     }
-
                     coord.push(yCoord);
                     yCoord = [];
                 }
@@ -761,29 +678,6 @@
             },
 
 
-            drawMainDateRange(ctx){
-                let dateFirst = this.columns[0][this.start];
-                let dateEnd = this.columns[0][this.end-1];
-
-                console.log('dateEnd',this.end);
-                let  options = {
-                    day: 'numeric',
-                    month: 'long',
-                    year:'numeric',
-                };
-                dateFirst = new Date(dateFirst).toLocaleString("en-GB", options);
-                dateEnd = new Date(dateEnd).toLocaleString("en-GB", options);
-                let range = dateFirst+' - '+ dateEnd;
-                let text = ctx.measureText(range); // TextMetrics object
-                let x = this.prevWidth -text.width-20;
-
-                ctx.fillStyle ="#36a8f1";
-
-                ctx.fillText(range, x, -this.mainHeight-this.mainShift/3);
-                ctx.fillText(this.nameChart, 10, -this.mainHeight-this.mainShift/3);
-                console.log('tthis.timeColor.textInfo',this.timeColor.textInfo);
-
-            },
 
             draw(){
                 let ctxMain =this.ctxMain;
@@ -803,7 +697,7 @@
 
 
                 this.drawGraphs(ctxPreview,this.previewCoord,this.xStep);
-                this.drawGraphs(ctxMain,this.mainCurrentData,this.step);
+                this.drawGraphs(ctxMain,this.mainCoord,this.step);
 
 
                 this.drawBox(ctxPreview);
@@ -816,52 +710,33 @@
                 this.drawMainDateRange(ctxMain);
 
             },
-            defaultDraw(){
-                let ctxMain =this.ctxMain;
-                let ctxPreview = this.ctxPreview;
 
-                //очищаем холст
-                ctxPreview.clearRect(0, -this.prevHeight-(this.prevShift/2), this.prevWidth, this.prevCanvasHeight);
-                ctxMain.clearRect(0, -this.mainHeight-(this.mainShift/2), this.prevWidth, this.mainCanvasHeight);
-
-                ctxPreview.fillStyle = this.timeColor.gLine;
-                ctxMain.fillStyle = this.timeColor.gLine;
-
-                ctxPreview.fillRect(0, -this.prevHeight-(this.prevShift/2), this.prevWidth, this.prevCanvasHeight);
-                ctxMain.fillRect(0, -this.mainHeight-(this.mainShift/2), this.prevWidth, this.mainCanvasHeight);
-
-
-                ctxMain.strokeStyle ='#000';
-                ctxMain.fillText('0', 5, -5);
-
-
-                ctxMain.beginPath();
-                for(let i =0 ; i < this.countLine+1 ; i++){
-                    ctxMain.moveTo(0,-this.shiftY*i);
-                    ctxMain.lineTo(this.prevWidth ,-this.shiftY*i);
-
-                }
-                ctxMain.stroke();
-
-            },
             basePercentData(){
                 console.log('Вызвали наконец');
-
                 this.setPercentData();
 
-                let percent = this.prevHeight*0.01;
-
-                this.previewCoord = this.getCoord(percent,this.prevHeight);
-
-                percent = this.mainHeight*0.01;
-
-                this.mainCoord = this.getCoord(percent,this.mainHeight);
+                let onePercenCanvas = this.prevHeight*0.01;
+                this.previewCoord = this.getCoord(onePercenCanvas,this.prevHeight);
+                onePercenCanvas = this.mainHeight*0.01;
+                this.allMainCoord = this.getCoord(onePercenCanvas,this.mainHeight);
 
                 console.log('this.previewCoord',this.previewCoord);
-                console.log('this.mainCoord',this.mainCoord);
+                console.log('this.allMainCoord',this.allMainCoord);
+            },
+            setFilteredData(newGraph,columns){
+                let yArray =[];
+                this.filteredData=[];
+                this.filteredData.push(columns[0]);
 
-                this.$emit('draw');
-
+                for(let i = 1; i <columns.length;i++){
+                    yArray = columns[i];
+                    if(newGraph.indexOf(yArray[0]) === -1){
+                        continue;
+                    }
+                    this.filteredData.push(yArray);
+                }
+                console.log('this.filteredData',this.filteredData);
+                console.log('newGraph',newGraph);
             },
 
         },
@@ -871,7 +746,9 @@
         },
 
         name: "PercentChart",
-
+        components: {
+            BaseGraph,
+        }
 
     }
 </script>

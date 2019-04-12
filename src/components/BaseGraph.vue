@@ -572,7 +572,9 @@
                 ctx.font = fontSize + "px sans-serif";
 
                 this.drawDate(ctx);
-                this.drawYmeter(ctx);
+
+                this.drawYmeterPercent(ctx);
+                //this.drawYmeterBar(ctx);
             },
 
 
@@ -632,11 +634,23 @@
                 }
             },
 
-
-            drawYmeter(ctx) {
-
+            drawYmeterPercent(ctx){
                 //  ctx.fillStyle = "#000";
+                ctx.beginPath();
+                const step = 25;
+                let text =0;
+                for(let i =0 ; i < this.countLine ; i++){
+                    ctx.moveTo(0,-this.shiftY*i);
+                    ctx.lineTo(this.prevWidth ,-this.shiftY*i);
+                    ctx.fillText(text, 5, -this.shiftY*i-5);
+                    text +=step;
+                }
+                ctx.stroke();
 
+            },
+
+            drawYmeterBar(ctx) {
+                //  ctx.fillStyle = "#000";
                 ctx.beginPath();
                 ctx.fillText("0", 5, -5);
                 for (let i = 1; i < this.countLine + 1; i++) {
