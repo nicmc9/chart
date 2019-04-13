@@ -24,6 +24,7 @@
                 v-on:base-percent-data="basePercentData"
                 v-on:set-main-data="setCurrentMainData"
                 v-on:set-active-graph="setFilteredData"
+                 v-on:set-init="setInit"
         ></base-graph>
 
     </div>
@@ -77,13 +78,14 @@
                 let yArray =[];
                 for(let i = 0; i < this.allMainCoord.length;i++ ) {
                     yArray  = this.allMainCoord[i];
-                    tempArray = yArray.slice(start,end);
+                    tempArray = yArray.slice(start-1,end-1);
                     this.mainCoord.push(tempArray);
                 }
 
                 for(let i = 0; i < this.percentData.length;i++ ) {
                     yArray  = this.percentData[i];
-                    tempArray = yArray.slice(start,end);
+                    console.log('start,end',start,end);
+                    tempArray = yArray.slice(start-1,end-1);
                     this.percentForBoard.push(tempArray);
                 }
                console.log('this.percentForBoard',this.percentForBoard);
@@ -116,12 +118,14 @@
                  let len = this.filteredData[0].length;
                 // Идем по длинне всех данных за основу время взяли
                for(let i = 1 ; i < this.filteredData.length; i++ ) {
+
                         let yArray = this.filteredData[i];
                         for (let j = 1; j < len; j++) {
                            str.push(Math.round((yArray[j] * 100) / sum[j-1]));
                             //Пулучаем значение процента в сумме данных конкретного значения
                             // идет на строкам матрицы
                          }
+
                         this.percentData.push(str);
                         str =[];
                     }
@@ -172,21 +176,7 @@
                 console.log('this.previewCoord',this.previewCoord);
                 console.log('this.allMainCoord',this.allMainCoord);
             },
-            setFilteredData(newGraph,columns){
-                let yArray =[];
-                this.filteredData=[];
-                this.filteredData.push(columns[0]);
 
-                for(let i = 1; i <columns.length;i++){
-                    yArray = columns[i];
-                    if(newGraph.indexOf(yArray[0]) === -1){
-                        continue;
-                    }
-                    this.filteredData.push(yArray);
-                }
-                console.log('this.filteredData',this.filteredData);
-                console.log('newGraph',newGraph);
-            },
 
         },
 

@@ -171,21 +171,20 @@
                 }
 
                 if (this.activGraph.length) {
-                    this.drawAll();
+                     this.drawAll();
                 } else {
                     this.defaultDraw();
                 }
 
             },
-            previewCoord: function () {
-                this.drawAll();
-            },
+            // previewCoord: function () {
+            //    this.drawAll();
+            // },
 
             prevWidth: function () {
-                let self = this;
-                this.$nextTick(function () {
-                    self.init();
-                    self.drawAll();
+
+                this.$nextTick(() =>{
+                   this.init();
                 });
 
                 console.log('watch', this.prevWidth);
@@ -203,11 +202,11 @@
             // Сдвигаем на 1 чтобы в результирующих массивах всегда пропускался первый индекс
             // в котором информация
             start: function () {
-                return Math.ceil(this.boxXcoord / this.xStep + 1);
+                return Math.ceil(this.boxXcoord / this.xStep+1);
             },
 
             end: function () {
-                return Math.ceil(this.start + this.boxWidth / this.xStep);
+                return Math.ceil(this.start + this.boxWidth /this.xStep);
             },
             shiftY: function () {
                 return this.mainHeight / this.countLine;
@@ -249,10 +248,10 @@
                     this.activGraph.splice(index, 1);
                 }
                 if (this.activGraph.length) {
-                    this.$emit('set-active-graph', this.activGraph, this.columns);
-                    this.$emit('base-percent-data', this.columns);
-                    //  this.init();
-                    this.drawAll();
+                    // Пересчитать координаты и отрисовать
+                     // и неплохо бы изменить filteredData
+                      this.$emit('set-active-graph',this.activGraph ,this.columns);
+                      this.drawAll();
 
                 } else {
                     this.defaultDraw();
@@ -269,10 +268,19 @@
                 this.touchBoard = true;
                 this.flagMouseInBoard = true;
                 this.timeId = requestAnimationFrame(this.drawInfoBoard);
+                //Перерисовать только главный экран для затенения
 
-                this.drawAll();
-
-            },
+                switch (this.nameChart) {
+                    case "DailyBarChart":
+                        this.drawMainCanvas();
+                        break;
+                    case "StackedBarChart":
+                        this.drawMainCanvas();
+                        break;
+                    default:
+                        console.log('Мне и так хорошо');
+                }
+             },
             mainUp() {
 
                 console.log('я вышел');
@@ -280,8 +288,17 @@
                 this.flagMouseInBoard = false;
                 cancelAnimationFrame(this.timeId);
                 this.ctxBoard.clearRect(0, -this.mainHeight - (this.mainShift / 2), this.prevWidth, this.mainCanvasHeight);
-                this.drawAll();
-            },
+                switch (this.nameChart) {
+                    case "DailyBarChart":
+                        this.drawMainCanvas();
+                        break;
+                    case "StackedBarChart":
+                        this.drawMainCanvas();
+                        break;
+                    default:
+                        console.log('Мне и так хорошо');
+                }
+              },
 
             mainMove(type, event) {
 
@@ -633,21 +650,34 @@
                     //  console.log('Попал в левую рамку');
 
                     this.timeId = setInterval(() =>
-                            this.drawAll()
+                        {
+                            this.$emit('set-main-data', this.start, this.end);
+                        this.drawMainCanvas();
+                        this.drawPreviewCanvas();
+                       }
                         , 50);
 
                 } else if (this.isIntoRightSide(mouseX)) {
 
                     this.selectedRightSide = true;
+                    this.$emit('set-main-data', this.start, this.end);
                     //   console.log('Попал в правую рамку');
                     this.timeId = setInterval(() =>
-                            this.drawAll()
+                        {
+                            this.$emit('set-main-data', this.start, this.end);
+                            this.drawMainCanvas();
+                            this.drawPreviewCanvas();
+                        }
                         , 50);
                 } else if (this.isIntoSlider(mouseX)) {
                     this.selectedBox = true;
-
+                    this.$emit('set-main-data', this.start, this.end);
                     this.timeId = setInterval(() =>
-                            this.drawAll()
+                        {
+                            this.$emit('set-main-data', this.start, this.end);
+                            this.drawMainCanvas();
+                            this.drawPreviewCanvas();
+                        }
                         , 50);
 
                 }
@@ -1024,22 +1054,28 @@
 
             drawGraphPercent(yCoord, ctx, color, step) {
                 let x = 0;
+                let y = 0;
                 ctx.fillStyle = color;
                 ctx.beginPath();
                 ctx.moveTo(x, 0);
+
                 for (let i = 0; i < yCoord.length; i++) {
 
                     ctx.lineTo(x, yCoord[i]);
                     x += step;
+                    y =yCoord[i]
                 }
-                //console.log('x',x);
+               //console.log('x',x);
                 ctx.lineTo(x, 0);
                 ctx.fill();
             },
 
+
             drawGraphBar(yCoord, ctx, color, step) {
                 //  console.log('я рисую график');
+
                 let x = 0;
+
                 ctx.fillStyle = color;
                 ctx.lineWidth = 0;
                 ctx.beginPath();
@@ -1083,11 +1119,6 @@
                 // Сначала заполнаем массив данных от start До end
 
                 this.drawGraphs(ctxMain, this.mainCoord, this.step);
-                //
-                // if (this.flagMouseInBoard&&this.nameChart =="StakedBarChart"||this.nameChart =="DailyBarChart") {
-                //     ctxMain.fillStyle = this.timeColor.fillPreview;
-                //     ctxMain.fillRect(0, -this.mainHeight, this.prevWidth, this.mainHeight);
-                // }
 
                 if (this.flagMouseInBoard && (this.nameChart == "StakedBarChart" || this.nameChart == "DailyBarChart")) {
                     ctxMain.fillStyle = this.timeColor.fillPreview;
@@ -1110,10 +1141,12 @@
                 this.drawFillBox(ctxPreview);
             },
             drawAll() {
+                this.$emit('base-percent-data');
                 this.$emit('set-main-data', this.start, this.end);
-                this.drawMainCanvas();
-                this.drawPreviewCanvas();
-
+                this.$nextTick(()=> {
+                    this.drawPreviewCanvas();
+                    this.drawMainCanvas();
+                });
             },
 
             // registerEvents(){
@@ -1172,7 +1205,14 @@
 
                 //  this.$emit('set-main-data',this.columns,this.start,this.end);
                 this.$emit('base-percent-data');
-                this.drawAll();
+                this.$emit('set-main-data', this.start, this.end);
+                this.$nextTick(()=> {
+                    this.drawPreviewCanvas();
+                    this.drawMainCanvas();
+                });
+
+
+
 
             },
             getCanvasCoords(elem) {
@@ -1242,16 +1282,19 @@
             let path = self.path + '/overview.json';
 
             let func = function (response) {
-                // Parse JSON string into object
-                self.chart = JSON.parse(response);
+                // Для XHR
+               // self.chart = JSON.parse(response);
+                // Для fetch
+                self.chart = response;
                 // console.log('self.chart',self.chart);
                 self.activGraph = Object.keys(self.chart.colors);
-                self.$emit('set-active-graph', self.activGraph, self.chart.columns);
+                self.$emit('set-init', self.chart.columns);
+               // self.$emit('set-active-graph',self.activGraph ,self.chart.columns);
                 self.init();
 
             };
-            this.loadXHR(func, path);
-            // this.loadFetch(func,path);
+           // this.loadXHR(func, path);
+            this.loadFetch(func,path);
 
             console.log('Base Graph created');
         },
