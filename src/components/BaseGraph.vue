@@ -1,6 +1,6 @@
 <template>
 
-    <div>
+    <div ref="cha">
         <!--        <p>touchBoard -&#45;&#45; {{touchBoard}}  this.timeId -&#45;&#45;{{this.timeId}} </p>-->
 
         <div class="stage" :style="{width:prevWidth+'px',height:mainCanvasHeight+'px'}">
@@ -455,7 +455,7 @@
                     flag = false;
                 }
 
-                console.log("xBoard", xBoard);
+               // console.log("xBoard", xBoard);
                 self.drawBoard(ctx, xBoard, -self.mainHeight, widthBoard, heightBoard, 10);
 
 
@@ -1283,8 +1283,10 @@
 
             let func = function (response) {
                 // Для XHR
-               // self.chart = JSON.parse(response);
+              //  self.chart = JSON.parse(response);
                 // Для fetch
+                self.$mount(self.$refs.cha);
+
                 self.chart = response;
                 // console.log('self.chart',self.chart);
                 self.activGraph = Object.keys(self.chart.colors);
@@ -1294,7 +1296,7 @@
 
             };
            // this.loadXHR(func, path);
-            this.loadFetch(func,path);
+             this.loadFetch(func,path);
 
             console.log('Base Graph created');
         },
@@ -1303,7 +1305,7 @@
 
            console.log('Base Graph mounted');
 
-            if (this.nameChart == "DailyBarChart") {
+            if (this.nameChart === "DailyBarChart") {
                 this.isButton = false;
             }
 

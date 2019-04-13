@@ -56,18 +56,18 @@
 <!--      </li>-->
 
 <!--      <li>-->
-<!--        <daily-bar-chart-->
-<!--                :isNight =  isNight-->
-<!--                :mainHeight  = mainHeight-->
-<!--                :prevWidth  = prevWidth-->
-<!--                :prevHeight  = prevHeight-->
-<!--                :prevShift  = prevShift-->
-<!--                :mainShift  = mainShift-->
-<!--                :mainCanvasHeight  = mainCanvasHeight-->
-<!--                :prevCanvasHeight = prevCanvasHeight-->
-<!--                :boxStop = boxStop-->
-<!--                :countLine = countLine-->
-<!--        ></daily-bar-chart>-->
+        <daily-bar-chart
+                :isNight =  isNight
+                :mainHeight  = mainHeight
+                :prevWidth  = prevWidth
+                :prevHeight  = prevHeight
+                :prevShift  = prevShift
+                :mainShift  = mainShift
+                :mainCanvasHeight  = mainCanvasHeight
+                :prevCanvasHeight = prevCanvasHeight
+                :boxStop = boxStop
+                :countLine = countLine
+        ></daily-bar-chart>
 
 <!--      </li>-->
 <!--      <li>-->

@@ -36,6 +36,7 @@
 
 <script>
     import BaseGraph from './BaseGraph.vue'
+
     export default {
         props: {
             isNight:Boolean,
@@ -49,7 +50,6 @@
             boxStop:Number,
             countLine:Number,
             },
-
             data: function () {
             return {
                 // Хранение координат предпросмотра для переиспользования
@@ -150,7 +150,8 @@
                     data.push(tempArray);
                 }
                 console.log('data', data);
-                this.step = this.prevWidth / (tempArray.length - 1);
+                // Здесь другой степ
+                this.step = this.prevWidth /tempArray.length;
                 return data;
 
             },

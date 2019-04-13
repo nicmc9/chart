@@ -144,7 +144,7 @@
                     data.push(tempArray);
                 }
                 console.log('data',data);
-                this.step =    this.prevWidth/(tempArray.length-1);
+                this.step =    this.prevWidth/tempArray.length;
                 return data;
 
             },
